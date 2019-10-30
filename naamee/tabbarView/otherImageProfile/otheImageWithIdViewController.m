@@ -149,7 +149,9 @@
         userImage.imageURL=[NSURL URLWithString:imageURL];
         
     }
-    
+    userImage.layer.cornerRadius=20;
+    [userImage clipsToBounds];
+
     UILabel *username=[[UILabel alloc]initWithFrame:CGRectMake(56, 8, self.view.frame.size.width, 20)];
     username.text=[exploreArr objectForKey:@"userName"];
     username.textColor=[Helper colorFromHexString:@"1b73b1"];

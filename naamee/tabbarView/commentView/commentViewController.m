@@ -47,6 +47,8 @@
 }
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    self.tabBarController.tabBar.hidden=YES;
      [[NSUserDefaults standardUserDefaults] setObject:@"" forKey:@"home"];
     postDetails = [[[NSUserDefaults standardUserDefaults]valueForKey:@"postDetails"]mutableCopy];
     UIView *backView=[[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
@@ -348,21 +350,19 @@
     
     AsyncImageView *userImagee=[[AsyncImageView alloc]initWithFrame:CGRectMake(8, 8, 45, 45)];
     NSString *imageURL;
-    
     imageURL=  [NSString stringWithFormat:@"http://naamee.com/api/webservices/images/%@", [dic objectForKey:@"pic"]];
     userImagee.imageURL=[NSURL URLWithString:imageURL];
 
-    UILabel *username=[[UILabel alloc]initWithFrame:CGRectMake(userImagee.frame.origin.x+userImagee.frame.size.width+10, 8, self.view.frame.size.width-(userImagee.frame.origin.x+userImagee.frame.size.width+10+8), 20)];
         
-    username.text=[dic objectForKey:@"userName"];
+    UILabel *username=[[UILabel alloc]initWithFrame:CGRectMake(userImagee.frame.origin.x+userImagee.frame.size.width+10, 8, self.view.frame.size.width-(userImagee.frame.origin.x+userImagee.frame.size.width+10+8), 20)];
+    username.text=[dic objectForKey:@"name"];
         username.tag=indexPath.row;
         username.userInteractionEnabled=YES;
         UITapGestureRecognizer *gesturee=[[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(userNameView:)];
         gesturee.numberOfTapsRequired=1;
         [username addGestureRecognizer:gesturee];
-        
-    username.textColor=[Helper colorFromHexString:@"1b73b1"];
-    username.font=[UIFont fontWithName:@"Helvetica Neue Medium" size:15];
+    username.textColor=[UIColor blackColor];
+    username.font=[UIFont fontWithName:@"HelveticaNeue-Bold" size:15];
     
     UITextView *comment=[[UITextView alloc]initWithFrame:CGRectMake(username.frame.origin.x, username.frame.origin.y+username.frame.size.height, username.frame.size.width, 20)];
     comment.textColor=[UIColor darkGrayColor];
@@ -370,8 +370,8 @@
         comment.delegate=self;
         comment.editable=false;
         comment.scrollEnabled=false;
-        comment.userInteractionEnabled=false;
-        
+        comment.userInteractionEnabled=YES;
+        comment.backgroundColor=[UIColor clearColor];
         NSData *data = [NSData dataWithBytes: [[dic objectForKey:@"comment"] UTF8String] length:strlen([[dic objectForKey:@"comment"] UTF8String])];
         NSString *msg = [[NSString alloc] initWithData:data encoding:NSNonLossyASCIIStringEncoding];
         
@@ -398,11 +398,6 @@
             [string addAttribute:NSLinkAttributeName value:@"click" range:[rangeArr[i] rangeValue]];
         }
 
-
-//        [string addAttribute:NSForegroundColorAttributeName value:[UIColor redColor] range:NSMakeRange(0,5)];
-//        [string addAttribute:NSForegroundColorAttributeName value:[UIColor greenColor] range:NSMakeRange(5,6)];
-//        [string addAttribute:NSForegroundColorAttributeName value:[UIColor blueColor] range:NSMakeRange(11,5)];
-//
         NSString *text=msg;
     
     comment.attributedText=string;
@@ -1341,8 +1336,15 @@
         else if (buttonIndex==1)
         {
             //share
-            NSArray *objectsToShare = @[postImage];
+            NSString *capString=[postDetails valueForKey:@"caption"];
+                       capString=  [NSString stringWithFormat:@"%@ %@",capString,[postDetails valueForKey:@"mood"]];
+                       capString=  [NSString stringWithFormat:@"%@ %@",capString,[postDetails valueForKey:@"wearing"]];
+                       capString=  [NSString stringWithFormat:@"%@ %@",capString,[postDetails valueForKey:@"watching"]];
+                       capString=  [NSString stringWithFormat:@"%@ %@",capString,[postDetails valueForKey:@"listening"]];
+                       capString=  [NSString stringWithFormat:@"%@ %@",capString,[postDetails valueForKey:@"location"]];
             
+            NSArray *objectsToShare = @[capString, postImage];
+
             UIActivityViewController *activityVC = [[UIActivityViewController alloc] initWithActivityItems:objectsToShare applicationActivities:nil];
             
             NSArray *excludeActivities = @[UIActivityTypePrint,

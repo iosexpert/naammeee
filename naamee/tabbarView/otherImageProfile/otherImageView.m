@@ -16,7 +16,9 @@
 #import "hashtagScreenView.h"
 #import "smileViewController.h"
 #import "GoogleMapViewController.h"
-
+#import "NSDate+NVTimeAgo.h"
+#import "editPostFilterView.h"
+#import "FiltersViewController.h"
 @interface otherImageView ()<UITextViewDelegate>
 {
     NSMutableDictionary *exploreArr;
@@ -25,6 +27,8 @@
     UILabel *numberOfLikes;
     UIView *likeBtnView;
     UILabel *numberOfRepeats;
+     AsyncImageView *postImage;
+    UIButton *threeDot;
 }
 @end
 
@@ -86,6 +90,7 @@ else
     
     AsyncImageView *userCover=[[AsyncImageView alloc]initWithFrame:mainView.bounds];
     NSString *coverURL;
+    NSLog(@"%@",exploreArr);
     if ([[exploreArr objectForKey:@"coverPic"] isKindOfClass:[NSNull class]] || [[exploreArr objectForKey:@"coverPic"] isEqualToString:@"<null>"])
     {
         
@@ -124,9 +129,11 @@ else
         userImage.imageURL=[NSURL URLWithString:imageURL];
         
     }
+    userImage.layer.cornerRadius=20;
+    [userImage clipsToBounds];
     
     UILabel *username=[[UILabel alloc]initWithFrame:CGRectMake(56, 8, self.view.frame.size.width, 20)];
-    username.text=[exploreArr objectForKey:@"userName"];
+    username.text=[exploreArr objectForKey:@"name"];
     username.textColor=[Helper colorFromHexString:@"1b73b1"];
     username.font=[UIFont fontWithName:@"Helvetica Neue Medium" size:15];
     [username sizeToFit];
@@ -162,25 +169,36 @@ else
     addressView.userInteractionEnabled=YES;
     UITapGestureRecognizer *gestureloc=[[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(addressLocation:)];
     [addressView addGestureRecognizer:gestureloc];
-    //    UILabel *time=[[UILabel alloc]initWithFrame:CGRectMake(20, 0, 60, 20)];
-    //    time.text=[NSDate mysqlDatetimeFormattedAsTimeAgo:[exploreArr objectForKey:@"created"]];
-    //    time.textColor=[Helper colorFromHexString:@"8c95a1"];
-    //    time.font=[UIFont fontWithName:@"Helvetica Neue" size:12];
-    //    //time.backgroundColor = [UIColor whiteColor];
-    //    [time sizeToFit];
-    //
-    //    UIView *timeView;
-    //
-    //    timeView = [[UIView alloc]initWithFrame:CGRectMake(self.view.frame.size.width-50, userImage.frame.origin.y+1, 15+5+time.frame.size.width+2, 20)];
-    //    //timeView.backgroundColor = [UIColor whiteColor];
-    //
-    //    UIImageView *timeIcon=[[UIImageView alloc]initWithFrame:CGRectMake(0, 2.5, 15, 15)];
-    //    timeIcon.image=[UIImage imageNamed:@"time"];
-    //
-    //    time.frame=CGRectMake(20, 0, time.frame.size.width, 20);
-    //
-    //    [timeView addSubview:timeIcon];
-    //    [timeView addSubview:time];
+        UILabel *time=[[UILabel alloc]initWithFrame:CGRectMake(20, 0, 60, 20)];
+        time.text=[NSDate mysqlDatetimeFormattedAsTimeAgo:[exploreArr objectForKey:@"created"]];
+        time.textColor=[Helper colorFromHexString:@"8c95a1"];
+        time.font=[UIFont fontWithName:@"Helvetica Neue" size:12];
+        //time.backgroundColor = [UIColor whiteColor];
+        [time sizeToFit];
+    
+        UIView *timeView;
+    
+        timeView = [[UIView alloc]initWithFrame:CGRectMake(self.view.frame.size.width-100, userImage.frame.origin.y+1, 15+5+time.frame.size.width+2, 20)];
+        //timeView.backgroundColor = [UIColor whiteColor];
+    
+        UIImageView *timeIcon=[[UIImageView alloc]initWithFrame:CGRectMake(0, 2.5, 15, 15)];
+        timeIcon.image=[UIImage imageNamed:@"time"];
+    
+        time.frame=CGRectMake(20, 0, time.frame.size.width, 20);
+    
+        [timeView addSubview:timeIcon];
+        [timeView addSubview:time];
+    
+    
+    threeDot = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    threeDot.frame = CGRectMake(self.view.frame.size.width-40, 0, 40, 40);
+    [threeDot addTarget:self action:@selector(optionsbyThreeDot:) forControlEvents:UIControlEventTouchUpInside];
+    UIImageView *img4=[[UIImageView alloc]initWithFrame:CGRectMake(threeDot.frame.size.width/2-10,5, 20, 30)];
+    img4.image=[UIImage imageNamed:@"td"];
+    img4.contentMode=UIViewContentModeScaleAspectFit;
+    img4.userInteractionEnabled=false;
+    [threeDot addSubview:img4];
+    
     
     UIView *lineView=[[UIView alloc]initWithFrame:CGRectMake(0, 69.5, self.view.frame.size.width, 0.5)];
     lineView.backgroundColor=[UIColor lightGrayColor];
@@ -190,13 +208,21 @@ else
     [mainView addSubview:blackView];
     [mainView addSubview:userImage];
     [mainView addSubview:username];
-    //[mainView addSubview:addressIcon];
     //[mainView addSubview:address];
     [mainView addSubview:addressView];
-    //[mainView addSubview:timeView];
+    [mainView addSubview:timeView];
     //[mainView addSubview:time];
     [mainView addSubview:lineView];
-    
+    if([[[NSUserDefaults standardUserDefaults]valueForKey:@"userid"] isEqualToString:[exploreArr objectForKey:@"user_id"]] )
+    {
+        threeDot.tag=1;
+        [mainView addSubview:threeDot];
+    }
+    else if(([[exploreArr objectForKey:@"isShare"]intValue]==1))
+    {
+        threeDot.tag=2;
+        [mainView addSubview:threeDot];
+    }
     mainView.userInteractionEnabled=YES;
     UITapGestureRecognizer *gesture  =[[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(viewProfile:)];
     [mainView addGestureRecognizer:gesture];
@@ -208,7 +234,7 @@ else
     
 //    AsyncImageView *postImage=[[AsyncImageView alloc]initWithFrame:CGRectMake(0, mainView.frame.size.height+mainView.frame.origin.y, [[dic valueForKey:@"postImage_width"]intValue], [[dic valueForKey:@"postImage_height"]intValue])];
     
-    AsyncImageView *postImage;
+   
     if([[dic valueForKey:@"postImage_width"]intValue]<self.view.frame.size.width)
     {
         postImage=[[AsyncImageView alloc]initWithFrame:CGRectMake(0, mainView.frame.size.height+mainView.frame.origin.y,self.view.frame.size.width, [[dic valueForKey:@"postImage_height"]intValue])];
@@ -238,6 +264,28 @@ else
     
     NSString *url=[NSString stringWithFormat:@"http://naamee.com/api/webservices/images/%@", [dic objectForKey:@"postImage"]];
     postImage.imageURL=[NSURL URLWithString:url];
+    
+    
+//    if(![[exploreArr objectForKey:@"shareduserfullname"]isEqualToString:@""])
+//    {
+//        UIImageView *vv=[[UIImageView alloc]initWithFrame:CGRectMake(5, postImage.frame.origin.y+postImage.frame.size.height+3, 15, 15)];
+//        vv.image=[UIImage imageNamed:@"repeatt"];
+//        [scrv addSubview:vv];
+//        
+//    UILabel *reshareView=[[UILabel alloc]initWithFrame:CGRectMake(20, postImage.frame.origin.y+postImage.frame.size.height, self.view.frame.size.width-90, 20)];
+//    reshareView.textColor=[UIColor blueColor];
+//    reshareView.font=[UIFont fontWithName:@"Helvetica Neue" size:12];
+//    NSString *st=[NSString stringWithFormat:@" By %@",[exploreArr objectForKey:@"shareduserfullname"]];
+//    reshareView.text=st;
+//    [scrv addSubview:reshareView];
+//        
+//        reshareView.userInteractionEnabled=YES;
+//        UITapGestureRecognizer *gesture=[[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(otheruserProfileOpen1:)];
+//        [reshareView addGestureRecognizer:gesture];
+//        
+//    }
+    
+    
     
     
    numberOfRepeats=[[UILabel alloc]initWithFrame:CGRectMake(self.view.frame.size.width-100, postImage.frame.origin.y+postImage.frame.size.height, 80, 25)];
@@ -659,7 +707,6 @@ else
         {
             NSMutableArray *postDetails = [json valueForKey:@"postsDetail"];
             self->exploreArr=postDetails[0];
-//            NSLog(@"JSON exploreArr: %@",  self->exploreArr);
             [self setData];
         
         }
@@ -1092,6 +1139,255 @@ else
     [userDefaults synchronize];
     GoogleMapViewController *smvc = [[GoogleMapViewController alloc]init];
     smvc.hidesBottomBarWhenPushed=NO;
+    [self.navigationController pushViewController:smvc animated:YES];
+    
+}
+-(void)optionsbyThreeDot:(UIButton*)btn
+{
+
+    if(btn.tag==1)
+    {
+    
+       NSString *useriddd=[exploreArr objectForKey:@"user_id"];
+      
+       
+       if([useriddd isEqualToString:[[NSUserDefaults standardUserDefaults]valueForKey:@"userid"]])
+       {
+           UIActionSheet *sheet = [[UIActionSheet alloc]initWithTitle:@"Options" delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Edit", @"Share", @"Delete", nil];
+           sheet.tag=1;
+           [sheet showInView:self.view];
+       }
+       else
+       {
+           UIActionSheet *sheet = [[UIActionSheet alloc]initWithTitle:@"Options" delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Report", nil];
+           sheet.tag=2;
+           [sheet showInView:self.view];
+       }
+    }
+    else
+    {
+        UIActionSheet *sheet = [[UIActionSheet alloc]initWithTitle:@"Options" delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Delete Repost",nil];
+                  sheet.tag=4;
+                  [sheet showInView:self.view];
+    }
+}
+#pragma mark -- ActionSheet Delegate
+
+-(void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if (actionSheet.tag==1)
+    {
+        if (buttonIndex==0)
+        {
+            //edit
+            
+            editPostFilterView *smvc = [[editPostFilterView alloc]init];
+            [[NSUserDefaults standardUserDefaults]setValue:exploreArr forKey:@"postDdetails"];
+
+            [[NSUserDefaults standardUserDefaults] setObject:UIImagePNGRepresentation(postImage.image) forKey:@"currentImage"];
+            [[NSUserDefaults standardUserDefaults]setValue:@"1" forKey:@"isCommenting"];
+            [self.navigationController pushViewController:smvc animated:YES];
+            
+                        FiltersViewController *controller = [self.storyboard instantiateViewControllerWithIdentifier:@"filter"];
+                        controller.details=exploreArr;
+                        controller.capturedImage = postImage.image;
+                        [self.navigationController pushViewController:controller animated:YES];
+        }
+        else if (buttonIndex==1)
+        {
+            //share
+
+            NSLog(@"%@",exploreArr);
+            NSString *capString=[exploreArr valueForKey:@"caption"];
+            capString=  [NSString stringWithFormat:@"%@ %@",capString,[exploreArr valueForKey:@"mood"]];
+            capString=  [NSString stringWithFormat:@"%@ %@",capString,[exploreArr valueForKey:@"wearing"]];
+            capString=  [NSString stringWithFormat:@"%@ %@",capString,[exploreArr valueForKey:@"watching"]];
+            capString=  [NSString stringWithFormat:@"%@ %@",capString,[exploreArr valueForKey:@"listening"]];
+            capString=  [NSString stringWithFormat:@"%@ %@",capString,[exploreArr valueForKey:@"location"]];
+          
+            
+            
+            NSArray *objectsToShare = @[capString, postImage.image];
+
+            UIActivityViewController *activityVC = [[UIActivityViewController alloc] initWithActivityItems:objectsToShare applicationActivities:nil];
+            
+            NSArray *excludeActivities = @[UIActivityTypePrint,
+                                           UIActivityTypeSaveToCameraRoll,
+                                           UIActivityTypeAddToReadingList];
+            
+            activityVC.excludedActivityTypes = excludeActivities;
+            //if iPhone
+            if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
+                [self presentViewController:activityVC animated:YES completion:nil];
+            }
+            //if iPad
+            else {
+                // Change Rect to position Popover
+                activityVC.popoverPresentationController.sourceView = threeDot;
+            }
+        }
+        else if (buttonIndex==2)
+        {
+            //delete
+            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Delete" message:@"Are you really want to delete this post?" delegate:self cancelButtonTitle:@"NO" otherButtonTitles:@"YES", nil];
+            alert.tag=3;
+            [alert show];
+        }
+    }
+    else if (actionSheet.tag==2)
+    {
+        if (buttonIndex==0)
+        {
+
+        [Helper showIndicatorWithText:@"Reporting Post..." inView:self.view];
+        
+        AFHTTPSessionManager *manager = [AFHTTPSessionManager manager];
+        NSDictionary *params = @{
+                                 @"method"       : @"reportPost",
+                                 @"userid"       : [[NSUserDefaults standardUserDefaults]valueForKey:@"userid"],
+                                 @"postid"       : [exploreArr valueForKey:@"postid"]
+                                 };
+        NSLog(@"param home: %@",params);
+        manager.responseSerializer = [AFHTTPResponseSerializer serializer];
+        manager.responseSerializer.acceptableContentTypes = nil;
+        [manager POST:@"http://naamee.com/api/webservices/index.php?format=json" parameters:params progress:nil success:^(NSURLSessionTask *task, id responseObject) {
+            NSDictionary* json = [NSJSONSerialization JSONObjectWithData:responseObject
+                                                                 options:kNilOptions
+                                                                   error:nil];
+            NSLog(@"JSON: %@", json);
+            [Helper hideIndicatorFromView:self.view];
+            
+            if ([[json objectForKey:@"success"]integerValue]==1)
+            {
+                //self->backScrollV.contentSize=CGSizeMake(0, 0);
+               // [self getFirstTenPost];
+                [Helper showAlertViewWithTitle:@"" message:[json objectForKey:@"message"]];
+
+            }
+            else
+            {
+                [Helper showAlertViewWithTitle:OOPS message:[json objectForKey:@"message"]];
+            }
+            
+            
+        }
+              failure:^(NSURLSessionTask *operation, NSError *error)
+         {
+             NSLog(@"Error: %@", error);
+             [Helper hideIndicatorFromView:self.view];
+         }];
+        }
+        else
+        {
+            
+        }
+    }
+    else if (actionSheet.tag==4)
+    {
+        if (buttonIndex==0)
+        {
+            [Helper showIndicatorWithText:@"Deleting Repost..." inView:self.view];
+                AFHTTPSessionManager *manager = [AFHTTPSessionManager manager];
+                NSDictionary *params = @{
+                                         @"method"       : @"deleterePost",
+                                         @"userid"       : [[NSUserDefaults standardUserDefaults]valueForKey:@"userid"],
+                                         @"sharePostid"  :[exploreArr valueForKey:@"postid"]
+                                         };
+                manager.responseSerializer = [AFHTTPResponseSerializer serializer];
+                manager.responseSerializer.acceptableContentTypes = nil;
+                [manager POST:@"http://naamee.com/api/webservices/index.php?format=json" parameters:params progress:nil success:^(NSURLSessionTask *task, id responseObject) {
+                    NSDictionary* json = [NSJSONSerialization JSONObjectWithData:responseObject
+                                                                         options:kNilOptions
+                                                                           error:nil];
+                    NSLog(@"JSON: %@", json);
+                    [Helper hideIndicatorFromView:self.view];
+                    
+                    if ([[json objectForKey:@"success"]integerValue]==1)
+                    {
+            //            [[NSNotificationCenter defaultCenter] postNotificationName:@"DeleteMyPost" object:self->detailDict];
+                        [self.navigationController popViewControllerAnimated:YES];
+                    }
+                    else
+                    {
+                        
+                        [Helper showAlertViewWithTitle:OOPS message:[json objectForKey:@"message"]];
+                        
+                    }
+                    
+                    
+                } failure:^(NSURLSessionTask *operation, NSError *error) {
+                    NSLog(@"Error: %@", error);
+                    [Helper hideIndicatorFromView:self.view];
+                    
+                }];
+        }
+    }
+
+}
+-(void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if (alertView.tag==3)
+    {
+        if (buttonIndex==1)
+        {
+            [self deletePostByPostID:[exploreArr valueForKey:@"postid"]];
+        }
+    }
+}
+-(void)deletePostByPostID:(NSString *)postID
+{
+    [Helper showIndicatorWithText:@"Deleting Post..." inView:self.view];
+    AFHTTPSessionManager *manager = [AFHTTPSessionManager manager];
+    NSDictionary *params = @{
+                             @"method"       : @"deletePost",
+                             @"userid"       : [[NSUserDefaults standardUserDefaults]valueForKey:@"userid"],
+                             @"postid"         :postID
+                             };
+    manager.responseSerializer = [AFHTTPResponseSerializer serializer];
+    manager.responseSerializer.acceptableContentTypes = nil;
+    [manager POST:@"http://naamee.com/api/webservices/index.php?format=json" parameters:params progress:nil success:^(NSURLSessionTask *task, id responseObject) {
+        NSDictionary* json = [NSJSONSerialization JSONObjectWithData:responseObject
+                                                             options:kNilOptions
+                                                               error:nil];
+        NSLog(@"JSON: %@", json);
+        [Helper hideIndicatorFromView:self.view];
+        
+        if ([[json objectForKey:@"success"]integerValue]==1)
+        {
+//            [[NSNotificationCenter defaultCenter] postNotificationName:@"DeleteMyPost" object:self->detailDict];
+            [self.navigationController popViewControllerAnimated:YES];
+        }
+        else
+        {
+            
+            [Helper showAlertViewWithTitle:OOPS message:[json objectForKey:@"message"]];
+            
+        }
+        
+        
+    } failure:^(NSURLSessionTask *operation, NSError *error) {
+        NSLog(@"Error: %@", error);
+        [Helper hideIndicatorFromView:self.view];
+        
+    }];
+    
+    
+}
+-(void)otheruserProfileOpen1:(UITapGestureRecognizer*)gesture
+{
+    NSString *st;
+    if([[exploreArr objectForKey:@"sharePostid"]isEqualToString:@""])
+    {
+        st=[exploreArr objectForKey:@"postid"];
+    }
+    else
+    {
+        st=[exploreArr objectForKey:@"sharePostid"];
+    }
+    [[NSUserDefaults standardUserDefaults]setValue:st forKey:@"postid"];
+    [[NSUserDefaults standardUserDefaults]setBool:YES forKey:@"isFromProfile"];
+    [[NSUserDefaults standardUserDefaults]setValue:exploreArr forKey:@"explore"];
+    otherImageView *smvc = [[otherImageView alloc]init];
     [self.navigationController pushViewController:smvc animated:YES];
     
 }

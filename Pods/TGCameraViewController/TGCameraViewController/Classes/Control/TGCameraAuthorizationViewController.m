@@ -70,9 +70,7 @@
 
 - (IBAction)closeTapped
 {
-    [[NSUserDefaults standardUserDefaults]setValue:@"Close" forKey:@"close"];
     [self dismissViewControllerAnimated:YES completion:nil];
-    
 }
 
 @end

@@ -52,7 +52,7 @@ static UIColor *staticTintColor = nil;
 + (UIColor *)colorWithRed:(CGFloat)red green:(CGFloat)green blue:(CGFloat)blue
 {
     CGFloat divisor = 255.f;
-    return [self colorWithRed:105/divisor green:176/divisor blue:220/divisor alpha:1];
+    return [self colorWithRed:red/divisor green:green/divisor blue:blue/divisor alpha:1];
 }
 
 @end

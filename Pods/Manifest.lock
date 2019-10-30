@@ -20,39 +20,41 @@ PODS:
   - Bolts/AppLinks (1.9.0):
     - Bolts/Tasks
   - Bolts/Tasks (1.9.0)
-  - CLImageEditor (0.2.2):
-    - CLImageEditor/Core (= 0.2.2)
-  - CLImageEditor/Core (0.2.2)
-  - FBSDKCoreKit (4.34.0):
+  - CLImageEditor (0.2.4):
+    - CLImageEditor/Core (= 0.2.4)
+  - CLImageEditor/Core (0.2.4)
+  - FBSDKCoreKit (4.35.0):
     - Bolts (~> 1.7)
-  - FBSDKLoginKit (4.34.0):
+  - FBSDKLoginKit (4.35.0):
     - FBSDKCoreKit
-  - GoogleMaps (2.7.0):
-    - GoogleMaps/Maps (= 2.7.0)
-  - GoogleMaps/Base (2.7.0)
-  - GoogleMaps/Maps (2.7.0):
+  - GoogleMaps (3.4.0):
+    - GoogleMaps/Maps (= 3.4.0)
+  - GoogleMaps/Base (3.4.0)
+  - GoogleMaps/Maps (3.4.0):
     - GoogleMaps/Base
-  - GooglePlaces (2.7.0):
-    - GoogleMaps/Base (= 2.7.0)
+  - GooglePlaces (3.4.0):
+    - GoogleMaps/Base (= 3.4.0)
   - GPUImage (0.1.7)
-  - SDWebImage (5.0.3):
-    - SDWebImage/Core (= 5.0.3)
-  - SDWebImage/Core (5.0.3)
+  - RSKImageCropper (2.2.3)
+  - SDWebImage (5.2.0):
+    - SDWebImage/Core (= 5.2.0)
+  - SDWebImage/Core (5.2.0)
   - TGCameraViewController (2.2.8)
 
 DEPENDENCIES:
   - AFNetworking (~> 3.0)
   - CLImageEditor
-  - FBSDKCoreKit
-  - FBSDKLoginKit
+  - FBSDKCoreKit (~> 4.35.0)
+  - FBSDKLoginKit (~> 4.35.0)
   - GoogleMaps
   - GooglePlaces
   - GPUImage (~> 0.1)
+  - RSKImageCropper
   - SDWebImage (~> 5.0)
   - TGCameraViewController
 
 SPEC REPOS:
-  https://github.com/cocoapods/specs.git:
+  trunk:
     - AFNetworking
     - Bolts
     - CLImageEditor
@@ -61,21 +63,23 @@ SPEC REPOS:
     - GoogleMaps
     - GooglePlaces
     - GPUImage
+    - RSKImageCropper
     - SDWebImage
     - TGCameraViewController
 
 SPEC CHECKSUMS:
   AFNetworking: b6f891fdfaed196b46c7a83cf209e09697b94057
   Bolts: ac6567323eac61e203f6a9763667d0f711be34c8
-  CLImageEditor: 34199b39c994af44f3f3aae6f6dcccb7ef8b75aa
-  FBSDKCoreKit: 0ff57f093b85c8c9d5aba697d3edf68a8960ce78
-  FBSDKLoginKit: 8c78f57a145afb756e4755e69195ebe08a42466e
-  GoogleMaps: f79af95cb24d869457b1f961c93d3ce8b2f3b848
-  GooglePlaces: 3d06e6c99654545b4738ce49648745779c25f2ef
+  CLImageEditor: dc3e5358f641368da3a76fc1c744a4c2ceb270ad
+  FBSDKCoreKit: 1a5b2e3ceb5ca827a53c54aa5f4a3480efff80d2
+  FBSDKLoginKit: 00a3d65d1226852f9d76dcddff01981e5e6d9c38
+  GoogleMaps: 67f4a604f80dd6a22d09c2a507a3a395b9f23060
+  GooglePlaces: 7547289e3fffc8980f4a027be99888e29d59b15d
   GPUImage: 733a5f0fab92df9de1c37ba9df520a833ccb406d
-  SDWebImage: d4f87d7d36c8a4d9f9459dc282e0caa057fdf935
+  RSKImageCropper: a446db0e8444a036b34f3c43db01b2373baa4b2a
+  SDWebImage: 609192dcf3898c910a2848032372ead951e66364
   TGCameraViewController: 0768b534800e6136e70dd3cc5aafe1310b448480
 
-PODFILE CHECKSUM: 4ecc9816c53bfdc019c4aab13e067babcacb2c0a
+PODFILE CHECKSUM: 0deba2db76793b3a3fc2cc3cc7006360e78b197b
 
-COCOAPODS: 1.7.5
+COCOAPODS: 1.8.1

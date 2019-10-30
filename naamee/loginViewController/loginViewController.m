@@ -101,8 +101,8 @@
     forgotPassButton.frame = CGRectMake(30, 380, self.view.frame.size.width-60, 50);
     [self.view addSubview:forgotPassButton];
     
-//    userNamefeild.text=@"prajapati.shailesh8@gmail.com";
-//    passwordfeild.text=@"123";//@"admin";//@;//@"bcc22966";
+    userNamefeild.text=@"ruttruttv@gmail.com";
+    passwordfeild.text=@"bcc22966";//@"admin";//@;//@"bcc22966";
     // Do any additional setup after loading the view.
 }
 - (void)textFieldDidChange:(UITextField*)textField {

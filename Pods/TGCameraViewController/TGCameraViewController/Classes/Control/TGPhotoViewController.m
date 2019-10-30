@@ -93,23 +93,7 @@ static NSString* const kTGCacheVignetteKey = @"TGCacheVignetteKey";
     if (CGRectGetHeight([[UIScreen mainScreen] bounds]) <= 480) {
         _topViewHeight.constant = 0;
     }
-    UIImage* flippedImage;
-    if([[[NSUserDefaults standardUserDefaults]valueForKey:@"front"]isEqualToString:@"yes"])
-    {
-        UIImage *leftImage;
-
-        leftImage = [UIImage imageWithCGImage:_photo.CGImage];
-        
-        // Don't forget to free the memory!
-        flippedImage = [UIImage imageWithCGImage:leftImage.CGImage
-                                                    scale:leftImage.scale
-                                              orientation:UIImageOrientationUpMirrored];
-        
-    }
-    if([[[NSUserDefaults standardUserDefaults]valueForKey:@"front"]isEqualToString:@"yes"])
-    {
-        _photo=flippedImage;
-    }
+    
     _photoView.clipsToBounds = YES;
     _photoView.image = _photo;
     
@@ -162,7 +146,7 @@ static NSString* const kTGCacheVignetteKey = @"TGCacheVignetteKey";
         TGAssetsLibrary *library = [TGAssetsLibrary defaultAssetsLibrary];
         
         void (^saveJPGImageAtDocumentDirectory)(UIImage *) = ^(UIImage *photo) {
-            [library saveJPGImageAtDocumentDirectory:_photo resultBlock:^(NSURL *assetURL) {
+            [library saveJPGImageAtDocumentDirectory:self->_photo resultBlock:^(NSURL *assetURL) {
                 if ([_delegate respondsToSelector:@selector(cameraDidSavePhotoAtPath:)]) {
                     [_delegate cameraDidSavePhotoAtPath:assetURL];
                 }

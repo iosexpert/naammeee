@@ -47,14 +47,13 @@
     [[NSUserDefaults standardUserDefaults]setValue:@"no" forKey:@"front"];
 
     
-//    videoView=[[UIView alloc]initWithFrame:CGRectMake(0, 80, self.view.frame.size.width, self.view.frame.size.width)];
-//    videoView.backgroundColor=[UIColor redColor];
+//    videoView=[[UIView alloc]initWithFrame:CGRectMake(0, 80, self.view.frame.size.width, self.view.frame.size.height-200)];
+//    videoView.backgroundColor=[UIColor whiteColor];
 //    [self.view addSubview:videoView];
 //
 //
 //    CaptureSession = [[AVCaptureSession alloc] init];
 //    VideoDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
-//
 //    if (VideoDevice)
 //    {
 //        NSError *error;
@@ -91,7 +90,7 @@
 //
 //    NSLog(@"Adding video preview layer");
 //    _PreviewLayer=[[AVCaptureVideoPreviewLayer alloc]initWithSession:CaptureSession];
-//    [[self PreviewLayer] setVideoGravity:AVLayerVideoGravityResizeAspectFill];
+//    [[self PreviewLayer] setVideoGravity:AVLayerVideoGravityResizeAspect];
 //
 //    NSLog(@"Setting image quality");
 //    [CaptureSession setSessionPreset:AVCaptureSessionPresetPhoto];
@@ -101,7 +100,7 @@
 //    //----- DISPLAY THE PREVIEW LAYER -----
 //    //Display it full screen under out view controller existing controls
 //    NSLog(@"Display the preview layer");
-//    CGRect layerRect = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.width) ;//[[videoView layer] bounds];
+//    CGRect layerRect = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height-280) ;//[[videoView layer] bounds];
 //
 //    [_PreviewLayer setBounds:layerRect];
 //    [_PreviewLayer setPosition:CGPointMake(CGRectGetMidX(layerRect),
@@ -125,27 +124,29 @@
         
     
     [[NSUserDefaults standardUserDefaults]setValue:@"no" forKey:@"front"];
+        [[NSUserDefaults standardUserDefaults]setValue:@"no" forKey:@"photo"];
 
     TGCameraNavigationController *navigationController =
     [TGCameraNavigationController newWithCameraDelegate:self];
     [self presentViewController:navigationController animated:YES completion:nil];
-    
+
    // [TGCamera setOption:kTGCameraOptionHiddenToggleButton value:@YES];
    // [TGCamera setOption:kTGCameraOptionHiddenAlbumButton value:@YES];
     [TGCamera setOption:kTGCameraOptionHiddenFilterButton value:@YES];
-    
+
+        [TGCameraColor setTintColor:[UIColor colorWithRed:28/255.0 green:128/255.0 blue:190/255.0 alpha:1.0]];
    // [TGCamera setOption:kTGCameraOptionSaveImageToAlbum value:@YES];
 
-//    upperView=[[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 80)];
-//    upperView.backgroundColor=[UIColor blackColor];
+//    upperView=[[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 100)];
+//    upperView.backgroundColor=[UIColor colorWithRed:28/255.0 green:128/255.0 blue:190/255.0 alpha:1.0];
 //    [self.view addSubview:upperView];
 //
-//    downView=[[UIView alloc]initWithFrame:CGRectMake(0,self.view.frame.size.width+80,self.view.frame.size.width, self.view.frame.size.height-self.view.frame.size.width-80)];
-//    downView.backgroundColor=[UIColor blackColor];
+//    downView=[[UIView alloc]initWithFrame:CGRectMake(0,self.view.frame.size.height-120,self.view.frame.size.width, 120)];
+//    downView.backgroundColor=[UIColor colorWithRed:28/255.0 green:128/255.0 blue:190/255.0 alpha:1.0];
 //    [self.view addSubview:downView];
 //
 //    UIButton *closeButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-//    closeButton.frame = CGRectMake(10, 30, 40, 40);
+//    closeButton.frame = CGRectMake(10, 50, 40, 40);
 //    [closeButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
 //    [closeButton setTitle:@"X" forState:UIControlStateNormal];
 //    closeButton.titleLabel.font = [UIFont fontWithName:@"Helvetica" size:28];
@@ -153,7 +154,7 @@
 //    [upperView addSubview:closeButton];
 //
 //    UIButton *focusButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-//    focusButton.frame = CGRectMake(self.view.frame.size.width/4-10, 30, 40, 40);
+//    focusButton.frame = CGRectMake(self.view.frame.size.width/4-10, 50, 40, 40);
 //    UIImage *imageee=[[UIImage imageNamed:@"auto"]imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 //    [focusButton setTintColor:[UIColor whiteColor]];
 //    [focusButton setImage:imageee forState:UIControlStateNormal];
@@ -161,7 +162,7 @@
 //    [upperView addSubview:focusButton];
 //
 //    UIButton *flashButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-//    flashButton.frame = CGRectMake(self.view.frame.size.width/2-20, 30, 40, 40);
+//    flashButton.frame = CGRectMake(self.view.frame.size.width/2-20, 50, 40, 40);
 //    UIImage *im=[[UIImage imageNamed:@"flash-auto"]imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 //    [flashButton setTintColor:[UIColor whiteColor]];
 //    [flashButton setImage:im forState:UIControlStateNormal];
@@ -170,7 +171,7 @@
 //
 //
 //    UIButton *timerButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-//    timerButton.frame = CGRectMake((self.view.frame.size.width/4)/2+self.view.frame.size.width/2+10, 30, 40, 40);
+//    timerButton.frame = CGRectMake((self.view.frame.size.width/4)/2+self.view.frame.size.width/2+10, 50, 40, 40);
 //    UIImage *imag=[[UIImage imageNamed:@"timer-off"]imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 //    [timerButton setTintColor:[UIColor whiteColor]];
 //    [timerButton setImage:imag forState:UIControlStateNormal];
@@ -178,7 +179,7 @@
 //    [upperView addSubview:timerButton];
 //
 //    UIButton *cameraChangeButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-//    cameraChangeButton.frame = CGRectMake(self.view.frame.size.width-50, 30, 40, 40);
+//    cameraChangeButton.frame = CGRectMake(self.view.frame.size.width-50, 50, 40, 40);
 //    UIImage *imagg=[[UIImage imageNamed:@"front_cam"]imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 //    [cameraChangeButton setTintColor:[UIColor whiteColor]];
 //    [cameraChangeButton setImage:imagg forState:UIControlStateNormal];
@@ -186,9 +187,16 @@
 //    [upperView addSubview:cameraChangeButton];
 //
 //
+//    UIView *ppp=[[UIView alloc]initWithFrame:CGRectMake(self.view.frame.size.width/2-35, 10, 70, 70)];
+//    ppp.backgroundColor=[UIColor clearColor];
+//        ppp.layer.cornerRadius=35;
+//        ppp.layer.borderWidth=0.5;
+//        ppp.layer.borderColor=[UIColor whiteColor].CGColor;
+//    [downView addSubview:ppp];
+//
 //
 //    UIButton *cameraButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-//    cameraButton.frame = CGRectMake(self.view.frame.size.width/2-45, 20, 90, 90);
+//    cameraButton.frame = CGRectMake(self.view.frame.size.width/2-45, 20, 90, 50);
 //    [cameraButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
 //    [cameraButton setTitle:@"" forState:UIControlStateNormal];
 //    UIImage *image2 = [[UIImage imageNamed:@"main_camera"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
@@ -199,7 +207,7 @@
 //    [downView addSubview:cameraButton];
 //
 //    UIButton *galleryButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-//    galleryButton.frame = CGRectMake(10, downView.frame.size.height-60, 40, 40);
+//    galleryButton.frame = CGRectMake(10, 20, 40, 40);
 //    UIImage *imagee=[[UIImage imageNamed:@"double-square"]imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 //    [galleryButton setTintColor:[UIColor whiteColor]];
 //    [galleryButton setImage:imagee forState:UIControlStateNormal];
@@ -307,15 +315,15 @@
         
     }
     
-    CGFloat width = currentImage.size.width;
-    CGFloat height = currentImage.size.height;
-    NSLog(@"%f    %f",width,height);
+//    CGFloat width = currentImage.size.width;
+//    CGFloat height = currentImage.size.height;
+//    NSLog(@"%f    %f",width,height);
+//
+//    UIImage *croppedImg = nil;
+//    CGSize ssss = CGSizeMake(width,width);
+//    croppedImg = [self squareImageWithImage:currentImage scaledToSize:ssss];
     
-    UIImage *croppedImg = nil;
-    CGSize ssss = CGSizeMake(width,width);
-    croppedImg = [self squareImageWithImage:currentImage scaledToSize:ssss];
-    
-    [[NSUserDefaults standardUserDefaults] setObject:UIImagePNGRepresentation(croppedImg) forKey:@"currentImage"];
+    [[NSUserDefaults standardUserDefaults] setObject:UIImagePNGRepresentation(currentImage) forKey:@"currentImage"];
     [[NSUserDefaults standardUserDefaults] synchronize];
     
     FiltersViewController *lvc=[[FiltersViewController alloc]init];
@@ -415,6 +423,8 @@
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
        fromConnection:(AVCaptureConnection *)connection
 {
+ 
+    
     currentImage = [self imageFromSampleBuffer:sampleBuffer];
 }
 
@@ -437,7 +447,7 @@
     
     CGImageRef cgImage = CGBitmapContextCreateImage(cgContext);
     UIImage* image = [UIImage imageWithCGImage:cgImage scale:1.0f
-                                   orientation:UIImageOrientationRight];
+                                   orientation:UIImageOrientationLeft];
     CGImageRelease(cgImage);
     CGContextRelease(cgContext);
     
@@ -538,12 +548,24 @@
 
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
 {
+    
+    
     UIImage *image = [info objectForKey:UIImagePickerControllerOriginalImage];
-    
-    CLImageEditor *editor = [[CLImageEditor alloc] initWithImage:image];
-    editor.delegate = self;
-    
-    [picker pushViewController:editor animated:YES];
+    UIImage *img=[self fixOrientation:image];
+
+    [[NSUserDefaults standardUserDefaults] setObject:UIImagePNGRepresentation(img) forKey:@"currentImage"];
+       [[NSUserDefaults standardUserDefaults] synchronize];
+       
+       FiltersViewController *lvc=[[FiltersViewController alloc]init];
+       [self.navigationController pushViewController:lvc animated:true];
+       
+       
+       //_photoView.image = image;
+       [self dismissViewControllerAnimated:YES completion:nil];
+//    CLImageEditor *editor = [[CLImageEditor alloc] initWithImage:image];
+//    editor.delegate = self;
+//
+//    [picker pushViewController:editor animated:YES];
 }
 #pragma mark- CLImageEditor delegate
 
@@ -588,13 +610,29 @@
 
 - (void)cameraDidCancel
 {
-    self.tabBarController.selectedIndex=0;
-    [self dismissViewControllerAnimated:YES completion:nil];
-}
 
+    NSLog(@"%@",[[NSUserDefaults standardUserDefaults] valueForKey:@"photo"]);
+    if([[[NSUserDefaults standardUserDefaults] valueForKey:@"photo"]isEqualToString:@"yes"])
+    {
+        [self dismissViewControllerAnimated:YES completion:nil];
+
+        UIImagePickerController *pickerView = [[UIImagePickerController alloc] init];
+        pickerView.allowsEditing = false;
+        pickerView.delegate = self;
+        [pickerView setSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
+        [self presentViewController:pickerView animated:YES completion:nil];
+
+        [[NSUserDefaults standardUserDefaults]setValue:@"no" forKey:@"photo"];
+    }
+    else
+    {
+    [self dismissViewControllerAnimated:YES completion:nil];
+    self.tabBarController.selectedIndex=0;
+    }
+}
 - (void)cameraDidTakePhoto:(UIImage *)image
 {
-        [[NSUserDefaults standardUserDefaults] setObject:UIImagePNGRepresentation(image) forKey:@"currentImage"];
+    [[NSUserDefaults standardUserDefaults] setObject:UIImagePNGRepresentation(image) forKey:@"currentImage"];
     [[NSUserDefaults standardUserDefaults] synchronize];
     
     FiltersViewController *lvc=[[FiltersViewController alloc]init];
@@ -606,7 +644,8 @@
 
 - (void)cameraDidSelectAlbumPhoto:(UIImage *)image
 {
-    [[NSUserDefaults standardUserDefaults] setObject:UIImagePNGRepresentation(image) forKey:@"currentImage"];
+    UIImage *img=[self fixOrientation:image];
+    [[NSUserDefaults standardUserDefaults] setObject:UIImagePNGRepresentation(img) forKey:@"currentImage"];
     [[NSUserDefaults standardUserDefaults] synchronize];
     
     FiltersViewController *lvc=[[FiltersViewController alloc]init];
@@ -617,4 +656,83 @@
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
+- (UIImage *)fixOrientation :(UIImage*)img{
+
+    // No-op if the orientation is already correct
+    if (img.imageOrientation == UIImageOrientationUp) return img;
+
+    // We need to calculate the proper transformation to make the image upright.
+    // We do it in 2 steps: Rotate if Left/Right/Down, and then flip if Mirrored.
+    CGAffineTransform transform = CGAffineTransformIdentity;
+
+    switch (img.imageOrientation) {
+        case UIImageOrientationDown:
+        case UIImageOrientationDownMirrored:
+            transform = CGAffineTransformTranslate(transform, img.size.width, img.size.height);
+            transform = CGAffineTransformRotate(transform, M_PI);
+            break;
+
+        case UIImageOrientationLeft:
+        case UIImageOrientationLeftMirrored:
+            transform = CGAffineTransformTranslate(transform, img.size.width, 0);
+            transform = CGAffineTransformRotate(transform, M_PI_2);
+            break;
+
+        case UIImageOrientationRight:
+        case UIImageOrientationRightMirrored:
+            transform = CGAffineTransformTranslate(transform, 0, img.size.height);
+            transform = CGAffineTransformRotate(transform, -M_PI_2);
+            break;
+        case UIImageOrientationUp:
+        case UIImageOrientationUpMirrored:
+            break;
+    }
+
+    switch (img.imageOrientation) {
+        case UIImageOrientationUpMirrored:
+        case UIImageOrientationDownMirrored:
+            transform = CGAffineTransformTranslate(transform, img.size.width, 0);
+            transform = CGAffineTransformScale(transform, -1, 1);
+            break;
+
+        case UIImageOrientationLeftMirrored:
+        case UIImageOrientationRightMirrored:
+            transform = CGAffineTransformTranslate(transform, img.size.height, 0);
+            transform = CGAffineTransformScale(transform, -1, 1);
+            break;
+        case UIImageOrientationUp:
+        case UIImageOrientationDown:
+        case UIImageOrientationLeft:
+        case UIImageOrientationRight:
+            break;
+    }
+
+    // Now we draw the underlying CGImage into a new context, applying the transform
+    // calculated above.
+    CGContextRef ctx = CGBitmapContextCreate(NULL, img.size.width, img.size.height,
+                                             CGImageGetBitsPerComponent(img.CGImage), 0,
+                                             CGImageGetColorSpace(img.CGImage),
+                                             CGImageGetBitmapInfo(img.CGImage));
+    CGContextConcatCTM(ctx, transform);
+    switch (img.imageOrientation) {
+        case UIImageOrientationLeft:
+        case UIImageOrientationLeftMirrored:
+        case UIImageOrientationRight:
+        case UIImageOrientationRightMirrored:
+            // Grr...
+            CGContextDrawImage(ctx, CGRectMake(0,0,img.size.height,img.size.width), img.CGImage);
+            break;
+
+        default:
+            CGContextDrawImage(ctx, CGRectMake(0,0,img.size.width,img.size.height), img.CGImage);
+            break;
+    }
+
+    // And now we just create a new UIImage from the drawing context
+    CGImageRef cgimg = CGBitmapContextCreateImage(ctx);
+    UIImage *img1 = [UIImage imageWithCGImage:cgimg];
+    CGContextRelease(ctx);
+    CGImageRelease(cgimg);
+    return img1;
+}
 @end

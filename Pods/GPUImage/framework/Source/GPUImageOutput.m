@@ -319,34 +319,33 @@ void reportAvailableMemoryForGPUImage(NSString *tag)
 - (UIImage *)imageFromCurrentFramebuffer;
 {
 	UIDeviceOrientation deviceOrientation = [[UIDevice currentDevice] orientation];
-    UIImageOrientation imageOrientation = UIImageOrientationLeftMirrored;// UIImageOrientationLeft;
-//    switch (deviceOrientation)
-//    {
-//        case UIDeviceOrientationPortrait:
-//            imageOrientation = UIImageOrientationUp;
-//            break;
-//        case UIDeviceOrientationPortraitUpsideDown:
-//            imageOrientation = UIImageOrientationDown;
-//            break;
-//        case UIDeviceOrientationLandscapeLeft:
-//            imageOrientation = UIImageOrientationLeft;
-//            break;
-//        case UIDeviceOrientationLandscapeRight:
-//            imageOrientation = UIImageOrientationRight;
-//            break;
-//        default:
-//            imageOrientation = UIImageOrientationUp;
-//            break;
-//    }
+    UIImageOrientation imageOrientation = UIImageOrientationLeft;
+	switch (deviceOrientation)
+    {
+		case UIDeviceOrientationPortrait:
+			imageOrientation = UIImageOrientationUp;
+			break;
+		case UIDeviceOrientationPortraitUpsideDown:
+			imageOrientation = UIImageOrientationDown;
+			break;
+		case UIDeviceOrientationLandscapeLeft:
+			imageOrientation = UIImageOrientationLeft;
+			break;
+		case UIDeviceOrientationLandscapeRight:
+			imageOrientation = UIImageOrientationRight;
+			break;
+		default:
+			imageOrientation = UIImageOrientationUp;
+			break;
+	}
     
-    return [self imageFromCurrentFramebufferWithOrientation:UIImageOrientationUp];
+    return [self imageFromCurrentFramebufferWithOrientation:imageOrientation];
 }
 
 - (UIImage *)imageFromCurrentFramebufferWithOrientation:(UIImageOrientation)imageOrientation;
 {
-    
     CGImageRef cgImageFromBytes = [self newCGImageFromCurrentlyProcessedOutput];
-    UIImage *finalImage =[[UIImage alloc] initWithCGImage:cgImageFromBytes];// [UIImage imageWithCGImage:cgImageFromBytes scale:1.0 orientation:imageOrientation];
+    UIImage *finalImage = [UIImage imageWithCGImage:cgImageFromBytes scale:1.0 orientation:imageOrientation];
     CGImageRelease(cgImageFromBytes);
     
     return finalImage;

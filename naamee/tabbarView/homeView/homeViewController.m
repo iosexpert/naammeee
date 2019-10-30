@@ -1782,7 +1782,15 @@ if(scrollView.tag==110)
             //share
             UIImageView *fullImage = (UIImageView *)[self.view viewWithTag:1000+selectedButtonIndax];
 
-            NSArray *objectsToShare = @[fullImage.image];
+            NSString *capString=[detailDict valueForKey:@"caption"];
+                                  capString=  [NSString stringWithFormat:@"%@ %@",capString,[detailDict valueForKey:@"mood"]];
+                                  capString=  [NSString stringWithFormat:@"%@ %@",capString,[detailDict valueForKey:@"wearing"]];
+                                  capString=  [NSString stringWithFormat:@"%@ %@",capString,[detailDict valueForKey:@"watching"]];
+                                  capString=  [NSString stringWithFormat:@"%@ %@",capString,[detailDict valueForKey:@"listening"]];
+                                  capString=  [NSString stringWithFormat:@"%@ %@",capString,[detailDict valueForKey:@"location"]];
+            
+            NSArray *objectsToShare = @[capString, fullImage.image];
+
             
             UIActivityViewController *activityVC = [[UIActivityViewController alloc] initWithActivityItems:objectsToShare applicationActivities:nil];
             

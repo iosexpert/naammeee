@@ -188,10 +188,7 @@
     else
     {
     FBSDKLoginManager *login = [[FBSDKLoginManager alloc] init];
-    [login
-     logInWithReadPermissions: @[@"public_profile",@"email"]
-     fromViewController:self
-     handler:^(FBSDKLoginManagerLoginResult *result, NSError *error) {
+    [login logInWithReadPermissions: @[@"public_profile",@"email"] fromViewController:self handler:^(FBSDKLoginManagerLoginResult *result, NSError *error) {
          if (error) {
              NSLog(@"Process error");
          } else if (result.isCancelled) {
@@ -264,7 +261,6 @@
              [Helper showIndicatorWithText:@"Signing up..." inView:self.view];
              
              NSLog(@"Request: %@", paramss);
-             
              AFHTTPSessionManager *manager = [AFHTTPSessionManager manager];
              manager.responseSerializer = [AFHTTPResponseSerializer serializer];
              manager.responseSerializer.acceptableContentTypes = nil;

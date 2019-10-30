@@ -10,25 +10,33 @@
 #import "AsyncImageView.h"
 #import "Helper.h"
 #import "AFNetworking.h"
-//#import "ImageCropView.h"
+#import "changeUsernameViewController.h"
+#import <RSKImageCropper/RSKImageCropper.h>
 
-@interface editProfileView ()<UITextFieldDelegate,UITextViewDelegate,UIImagePickerControllerDelegate,UINavigationControllerDelegate>//,ImageCropViewControllerDelegate>
+//#import "ImageCropView.h"
+//#import "TOCropViewController.h"
+
+@interface editProfileView ()<UITextFieldDelegate,UITextViewDelegate,UIImagePickerControllerDelegate,UINavigationControllerDelegate,RSKImageCropViewControllerDelegate>//,TOCropViewControllerDelegate>
 {
     NSDictionary *myProfile;
     AsyncImageView *userImage,*wallImage;
     UITextView *bio;
     UILabel *namelbl;
+    UIImageView *imgv;
     
     UITextField *name;
     UITextField *username;
     UITextField *email;
     UITextField *phoneNo,*userwebsite;
     UIScrollView *scrv;
+    UIView *popView;
 
     int changeCoverOrImage,viewYourAction;
     UIImage *coverImg,*profileImg;
+    UIView *popView1;
 }
-
+@property (nonatomic, assign) CGRect croppedFrame;
+@property (nonatomic, assign) NSInteger angle;
 @end
 
 @implementation editProfileView
@@ -78,7 +86,7 @@
     scrv.backgroundColor=[UIColor whiteColor];
     
     
-    wallImage=[[AsyncImageView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.width/2)];
+    wallImage=[[AsyncImageView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 60)];
     wallImage.clipsToBounds=YES;
     wallImage.imageURL=[NSURL URLWithString:[NSString stringWithFormat:@"http://naamee.com/api/webservices/images/%@",[dict valueForKey:@"coverPic"]]];
     wallImage.contentMode=UIViewContentModeScaleAspectFill;
@@ -86,11 +94,11 @@
     [scrv addSubview:wallImage];
     
     
-    userImage=[[AsyncImageView alloc]initWithFrame:CGRectMake(wallImage.frame.size.width/2-50, wallImage.frame.size.height/2-50, 100, 100)];
+    userImage=[[AsyncImageView alloc]initWithFrame:CGRectMake(wallImage.frame.size.width/2-50, 0, 100, 100)];
     userImage.clipsToBounds=YES;
     userImage.layer.cornerRadius=50;
     userImage.layer.borderWidth=0.1;
-    userImage.contentMode=UIViewContentModeScaleAspectFill;
+    userImage.contentMode=UIViewContentModeScaleAspectFit;
     userImage.imageURL=[NSURL URLWithString:[NSString stringWithFormat:@"http://naamee.com/api/webservices/images/%@",[dict valueForKey:@"profile_pic"]]];
     [scrv addSubview:userImage];
     
@@ -102,7 +110,7 @@
     [changeImage addTarget:self action:@selector(changeImage) forControlEvents:UIControlEventTouchUpInside];
     [scrv addSubview:changeImage];
     
-    UIButton *changeCover =[[UIButton alloc]initWithFrame:CGRectMake(0, self.view.frame.size.width/2-30, 100, 20)];
+    UIButton *changeCover =[[UIButton alloc]initWithFrame:CGRectMake(0, 80, 100, 20)];
     changeCover.titleLabel.font=[UIFont fontWithName:@"Arial-BoldMT" size:10.0f];
     [changeCover setTitle:@"Change Cover" forState:UIControlStateNormal];
     [changeCover setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
@@ -113,14 +121,14 @@
     
     
     
-    UILabel *lblName = [[UILabel alloc]initWithFrame:CGRectMake(10, wallImage.frame.size.height+wallImage.frame.origin.y+5, 250, 20)];
+    UILabel *lblName = [[UILabel alloc]initWithFrame:CGRectMake(10, wallImage.frame.size.height+wallImage.frame.origin.y+65, 250, 20)];
     lblName.text = @"Name";
     lblName.font=[UIFont fontWithName:@"Arial" size:12.0f];
     lblName.textColor = [UIColor lightGrayColor];
     lblName.textAlignment = NSTextAlignmentLeft;
     [scrv addSubview:lblName];
     
-    name = [[UITextField alloc] initWithFrame:CGRectMake(10, wallImage.frame.size.height+wallImage.frame.origin.y+30, self.view.frame.size.width-20, 30)];
+    name = [[UITextField alloc] initWithFrame:CGRectMake(10, wallImage.frame.size.height+wallImage.frame.origin.y+90, self.view.frame.size.width-20, 30)];
     name.delegate=self;
     name.tag=1;
     name.layer.borderColor=[UIColor clearColor].CGColor;
@@ -130,7 +138,7 @@
     name.text=[dict valueForKey:@"fullname"];
     [scrv addSubview:name];
     
-    UIView *v=[[UIView alloc]initWithFrame:CGRectMake(10, wallImage.frame.size.height+wallImage.frame.origin.y+60, self.view.frame.size.width-20, 1)];
+    UIView *v=[[UIView alloc]initWithFrame:CGRectMake(10, wallImage.frame.size.height+wallImage.frame.origin.y+120, self.view.frame.size.width-20, 1)];
     v.backgroundColor=[UIColor lightGrayColor];
     v.alpha=0.5;
     [scrv addSubview:v];
@@ -151,6 +159,20 @@
     username.placeholder=@"User Name";
     username.text=[dict valueForKey:@"username"];
     [scrv addSubview:username];
+    username.userInteractionEnabled=false;
+    username.backgroundColor=[UIColor colorWithRed:245/255.0 green:245/255.0 blue:245/255.0 alpha:1.0];
+
+    
+    UIButton *changeUsername =[[UIButton alloc]initWithFrame:CGRectMake(self.view.frame.size.width-140, name.frame.size.height+name.frame.origin.y+30, 120, 30)];
+    changeUsername.titleLabel.font=[UIFont fontWithName:@"Arial-BoldMT" size:13.0f];
+    [changeUsername setTitle:@"Change Username" forState:UIControlStateNormal];
+    [changeUsername setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    [changeUsername addTarget:self action:@selector(changeusernameScreen) forControlEvents:UIControlEventTouchUpInside];
+    [scrv addSubview:changeUsername];
+    
+
+    
+    
     
     UIView *v1=[[UIView alloc]initWithFrame:CGRectMake(10, name.frame.size.height+name.frame.origin.y+60, self.view.frame.size.width-20, 1)];
     v1.backgroundColor=[UIColor lightGrayColor];
@@ -253,9 +275,12 @@
     bio.layer.borderColor=[UIColor clearColor].CGColor;
     bio.layer.borderWidth=0.5;
     bio.font= [UIFont fontWithName:@"Arial-BoldMT" size:16.0f];
+    if(![[dict valueForKey:@"description"] isEqualToString:@""])
+    {
     NSData *data = [NSData dataWithBytes: [[dict valueForKey:@"description"] UTF8String] length:strlen([[dict valueForKey:@"description"] UTF8String])];
     NSString *msg = [[NSString alloc] initWithData:data encoding:NSNonLossyASCIIStringEncoding];
     bio.text=msg;
+    }
     if([[dict valueForKey:@"description"] isEqualToString:@""])
     bio.text=@"bio";
     [scrv addSubview:bio];
@@ -434,28 +459,70 @@
 {
     if(changeCoverOrImage)
     {
-        profileImg=[info valueForKey:UIImagePickerControllerOriginalImage];
-        userImage.image=[info valueForKey:UIImagePickerControllerOriginalImage];
+        UIImage *image = [info valueForKey:UIImagePickerControllerOriginalImage];
+           RSKImageCropViewController *imageCropVC = [[RSKImageCropViewController alloc] initWithImage:image];
+           imageCropVC.delegate = self;
+           [self.navigationController pushViewController:imageCropVC animated:YES];
     }
     else
     {
-//        ImageCropViewController *controller = [[ImageCropViewController alloc] initWithImage:[info valueForKey:UIImagePickerControllerOriginalImage]];
-//        controller.delegate = self;
-//        controller.blurredBackground = YES;
-//        // set the cropped area
-//        // controller.cropArea = CGRectMake(0, 0, 100, 200);
-//        [[self navigationController] pushViewController:controller animated:YES];
-        coverImg=[info valueForKey:UIImagePickerControllerOriginalImage];
-        wallImage.image=[info valueForKey:UIImagePickerControllerOriginalImage];
+
+        //coverImg=[info valueForKey:UIImagePickerControllerOriginalImage];
+        
+        popView=[[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
+        popView.backgroundColor=[UIColor colorWithRed:0 green:0 blue:0 alpha:0.6];
+        [self.view addSubview:popView];
+        
+        
+        UIScrollView *zoomscrv=[[UIScrollView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
+        zoomscrv.backgroundColor=[UIColor whiteColor];
+        zoomscrv.contentSize=CGSizeMake(self.view.frame.size.width, self.view.frame.size.height+self.view.frame.size.height);
+//        zoomscrv.minimumZoomScale=.5;
+//        zoomscrv.maximumZoomScale=2.0;
+//        zoomscrv.delegate=self;
+        imgv=[[UIImageView alloc]initWithFrame:CGRectMake(0, zoomscrv.frame.size.height-((zoomscrv.frame.size.height)/2), self.view.frame.size.width, self.view.frame.size.height)];
+        imgv.image=[info valueForKey:UIImagePickerControllerOriginalImage];
+        imgv.contentMode=UIViewContentModeScaleAspectFit;
+        [zoomscrv addSubview:imgv];
+        
+        [popView addSubview:zoomscrv];
+        
+        
+        popView1=[[UIView alloc]initWithFrame:CGRectMake(0, (self.view.frame.size.height/2)-50, self.view.frame.size.width, 60)];
+        popView1.backgroundColor=[UIColor colorWithRed:0 green:0 blue:0 alpha:0.4];
+        [popView addSubview:popView1];
+        popView1.userInteractionEnabled=false;
+        
+        
+        UIButton *changeImage =[[UIButton alloc]initWithFrame:CGRectMake(self.view.frame.size.width-110, 40, 100, 30)];
+        changeImage.titleLabel.font=[UIFont fontWithName:@"Arial-BoldMT" size:13.0f];
+        [changeImage setTitle:@"Crop Image" forState:UIControlStateNormal];
+        [changeImage setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        [changeImage addTarget:self action:@selector(changeImageScreen1) forControlEvents:UIControlEventTouchUpInside];
+        changeImage.backgroundColor=[UIColor greenColor];
+        [popView addSubview:changeImage];
+        
+        UIButton *changeImage1 =[[UIButton alloc]initWithFrame:CGRectMake(10, 40, 100, 30)];
+        changeImage1.titleLabel.font=[UIFont fontWithName:@"Arial-BoldMT" size:13.0f];
+        [changeImage1 setTitle:@"Cancel" forState:UIControlStateNormal];
+        [changeImage1 setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        [changeImage1 addTarget:self action:@selector(cancelImageScreen) forControlEvents:UIControlEventTouchUpInside];
+        changeImage.backgroundColor=[UIColor redColor];
+        [popView addSubview:changeImage1];
+        zoomscrv.contentOffset=CGPointMake(0, self.view.frame.size.height/2);
+        
+        //wallImage.image=[info valueForKey:UIImagePickerControllerOriginalImage];
 
     }
     [picker dismissViewControllerAnimated:YES completion:nil];
+
+//    [picker dismissViewControllerAnimated:YES completion:nil];
 }
 
-- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker
-{
-    [self dismissViewControllerAnimated:YES completion:nil];
-}
+//- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker
+//{
+//    [self dismissViewControllerAnimated:YES completion:nil];
+//}
 //- (void)ImageCropViewControllerSuccess:(ImageCropViewController *)controller didFinishCroppingImage:(UIImage *)croppedImage{
 //    coverImg = croppedImage;
 //    wallImage.image = croppedImage;
@@ -466,59 +533,82 @@
 //- (void)ImageCropViewControllerDidCancel:(ImageCropViewController *)controller{
 //    wallImage.image = coverImg;
 //    [[self navigationController] popViewControllerAnimated:YES];
-//}
 
 
+// Crop image has been canceled.
+- (void)imageCropViewControllerDidCancelCrop:(RSKImageCropViewController *)controller
+{
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+// The original image has been cropped. Additionally provides a rotation angle used to produce image.
+- (void)imageCropViewController:(RSKImageCropViewController *)controller
+                   didCropImage:(UIImage *)croppedImage
+                  usingCropRect:(CGRect)cropRect
+                  rotationAngle:(CGFloat)rotationAngle
+{
+    userImage.image= croppedImage;
+
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+// The original image will be cropped.
+- (void)imageCropViewController:(RSKImageCropViewController *)controller
+                  willCropImage:(UIImage *)originalImage
+{
+    // Use when `applyMaskToCroppedImage` set to YES.
+    //[SVProgressHUD show];
+}
 -(void)updateProfile
 {
 
-    
-
-    NSDictionary *dict=[[myProfile objectForKey:@"userDetails"]objectAtIndex:0];
-    
-    if(![username.text isEqualToString:[dict valueForKey:[dict valueForKey:@"username"]]])
-    {
-        
-    
-    [Helper showIndicatorWithText:@"Checking Username..." inView:self.view];
-    AFHTTPSessionManager *manager = [AFHTTPSessionManager manager];
-    NSDictionary *params = @{
-                             @"method"       : @"changeusername",
-                             @"userid"       : [[NSUserDefaults standardUserDefaults]valueForKey:@"userid"],
-                             @"username"     :username.text
-                             };
-    manager.responseSerializer = [AFHTTPResponseSerializer serializer];
-    manager.responseSerializer.acceptableContentTypes = nil;
-    [manager POST:@"http://naamee.com/api/webservices/index.php?format=json" parameters:params progress:nil success:^(NSURLSessionTask *task, id responseObject) {
-        NSDictionary* json = [NSJSONSerialization JSONObjectWithData:responseObject
-                                                             options:kNilOptions
-                                                               error:nil];
-        NSLog(@"JSON: %@", json);
-        [Helper hideIndicatorFromView:self.view];
-        
-        if ([[json objectForKey:@"success"]integerValue]==1)
-        {
-            [self updateNowUsernameExist];
-        }
-        else
-        {
-            
-            [Helper showAlertViewWithTitle:OOPS message:[json objectForKey:@"message"]];
-            
-        }
-        
-        
-    } failure:^(NSURLSessionTask *operation, NSError *error) {
-        NSLog(@"Error: %@", error);
-        [Helper hideIndicatorFromView:self.view];
-        
-    }];
-    }
-    else
-    {
-        [self updateNowUsernameExist];
-    }
-   //
+    [self updateNowUsernameExist];
+//
+//    NSDictionary *dict=[[myProfile objectForKey:@"userDetails"]objectAtIndex:0];
+//
+//    if(![username.text isEqualToString:[dict valueForKey:[dict valueForKey:@"username"]]])
+//    {
+//
+//
+//    [Helper showIndicatorWithText:@"Checking Username..." inView:self.view];
+//    AFHTTPSessionManager *manager = [AFHTTPSessionManager manager];
+//    NSDictionary *params = @{
+//                             @"method"       : @"checkUsername",
+//                             @"userid"       : [[NSUserDefaults standardUserDefaults]valueForKey:@"userid"],
+//                             @"username"     :username.text
+//                             };
+//    manager.responseSerializer = [AFHTTPResponseSerializer serializer];
+//    manager.responseSerializer.acceptableContentTypes = nil;
+//    [manager POST:@"http://naamee.com/api/webservices/index.php?format=json" parameters:params progress:nil success:^(NSURLSessionTask *task, id responseObject) {
+//        NSDictionary* json = [NSJSONSerialization JSONObjectWithData:responseObject
+//                                                             options:kNilOptions
+//                                                               error:nil];
+//        NSLog(@"JSON: %@", json);
+//        [Helper hideIndicatorFromView:self.view];
+//
+//        if ([[json objectForKey:@"success"]integerValue]==1)
+//        {
+//            [self updateNowUsernameExist];
+//        }
+//        else
+//        {
+//
+//            [Helper showAlertViewWithTitle:OOPS message:[json objectForKey:@"message"]];
+//
+//        }
+//
+//
+//    } failure:^(NSURLSessionTask *operation, NSError *error) {
+//        NSLog(@"Error: %@", error);
+//        [Helper hideIndicatorFromView:self.view];
+//
+//    }];
+//    }
+//    else
+//    {
+//        [self updateNowUsernameExist];
+//    }
+//   //
 
     
    
@@ -615,9 +705,9 @@
                           NSLog(@"%@",jsonResponse);
                           [Helper hideIndicatorFromView:self.view];
                           
-                          if([[jsonResponse valueForKey:@"code"]intValue]==1)
+                          if([[jsonResponse valueForKey:@"success"]intValue]==1)
                           {
-                              UIAlertController * alert = [UIAlertController alertControllerWithTitle:@"UPDATED" message:@"" preferredStyle:UIAlertControllerStyleAlert];
+                              UIAlertController * alert = [UIAlertController alertControllerWithTitle:[jsonResponse valueForKey:@"message"] message:@"" preferredStyle:UIAlertControllerStyleAlert];
                               
                               UIAlertAction* noButton = [UIAlertAction
                                                          actionWithTitle:@"OK"
@@ -634,6 +724,145 @@
     [uploadTask resume];
 }
 
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
+{
+    if(textField.tag==2)
+    {
+        NSRange lowercaseCharRange = [string rangeOfCharacterFromSet:[NSCharacterSet uppercaseLetterCharacterSet]];
+        
+        if (lowercaseCharRange.location != NSNotFound) {
+            textField.text = [textField.text stringByReplacingCharactersInRange:range
+                                                                     withString:[string lowercaseString]];
+            return NO;
+        }
+    }
+    return YES;
+}
+#pragma mark - Gesture Recognizer -
+//- (void)didTapImageView
+//{
+//    // When tapping the image view, restore the image to the previous cropping state
+//    TOCropViewController *cropController = [[TOCropViewController alloc] initWithCroppingStyle:self.croppingStyle image:self.image];
+//    cropController.delegate = self;
+//    CGRect viewFrame = [self.view convertRect:self.imageView.frame toView:self.navigationController.view];
+//    [cropController presentAnimatedFromParentViewController:self
+//                                                  fromImage:self.imageView.image
+//                                                   fromView:nil
+//                                                  fromFrame:viewFrame
+//                                                      angle:self.angle
+//                                               toImageFrame:self.croppedFrame
+//                                                      setup:^{ self.imageView.hidden = YES; }
+//                                                 completion:nil];
+//}
+
+//#pragma mark - Cropper Delegate -
+//- (void)cropViewController:(TOCropViewController *)cropViewController didCropToImage:(UIImage *)image withRect:(CGRect)cropRect angle:(NSInteger)angle
+//{
+//    self.croppedFrame = cropRect;
+//    self.angle = angle;
+//    [self updateImageViewWithImage:image fromCropViewController:cropViewController];
+//}
+//
+//- (void)cropViewController:(TOCropViewController *)cropViewController didCropToCircularImage:(UIImage *)image withRect:(CGRect)cropRect angle:(NSInteger)angle
+//{
+//    self.croppedFrame = cropRect;
+//    self.angle = angle;
+//    [self updateImageViewWithImage:image fromCropViewController:cropViewController];
+//}
+//
+//- (void)updateImageViewWithImage:(UIImage *)image fromCropViewController:(TOCropViewController *)cropViewController
+//{
+////    self.imageView.image = image;
+////    [self layoutImageView];
+////
+////    self.navigationItem.rightBarButtonItem.enabled = YES;
+//
+// //   if (cropViewController.croppingStyle != TOCropViewCroppingStyleCircular) {
+////        self.imageView.hidden = YES;
+////        [cropViewController dismissAnimatedFromParentViewController:self
+////                                                   withCroppedImage:image
+////                                                             toView:self.imageView
+////                                                            toFrame:CGRectZero
+////                                                              setup:^{ [self layoutImageView]; }
+////                                                         completion:
+////         ^{
+////             self.imageView.hidden = NO;
+////         }];
+////    }
+////    else {
+////        self.imageView.hidden = NO;
+//        [cropViewController dismissViewControllerAnimated:YES completion:nil];
+//    //}
+//}
 
 
+- (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView
+{
+    return imgv;
+    
+}
+- (UIImage *) captureScreen {
+    CGRect rect = CGRectMake(30, (self.view.frame.size.height/2)-(self.view.frame.size.width-60)/2, self.view.frame.size.width-60, self.view.frame.size.width-60);
+    UIGraphicsBeginImageContext(self.view.frame.size);
+    popView1.backgroundColor=[UIColor clearColor];
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    [popView.layer renderInContext:context];
+    UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    
+    CGImageRef imageRef = CGImageCreateWithImageInRect([img CGImage], rect);
+    UIImage *cropped = [UIImage imageWithCGImage:imageRef];
+    
+    return cropped;
+//    UIGraphicsBeginImageContext(rect.size);
+//    //popView1.backgroundColor=[UIColor clearColor];
+//    CGContextRef context = UIGraphicsGetCurrentContext();
+//    [popView.layer renderInContext:context];
+//    UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
+//    UIGraphicsEndImageContext();
+//    return img;
+}
+- (UIImage *) captureScreen1 {
+    CGRect rect = CGRectMake(0, (self.view.frame.size.height/2)-50, self.view.frame.size.width, 60);
+    UIGraphicsBeginImageContext(self.view.frame.size);
+    popView1.backgroundColor=[UIColor clearColor];
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    [popView.layer renderInContext:context];
+    UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    
+    CGImageRef imageRef = CGImageCreateWithImageInRect([img CGImage], rect);
+    UIImage *cropped = [UIImage imageWithCGImage:imageRef];
+    
+    return cropped;
+    //    UIGraphicsBeginImageContext(rect.size);
+    //    //popView1.backgroundColor=[UIColor clearColor];
+    //    CGContextRef context = UIGraphicsGetCurrentContext();
+    //    [popView.layer renderInContext:context];
+    //    UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
+    //    UIGraphicsEndImageContext();
+    //    return img;
+}
+-(void)changeImageScreen
+{
+   userImage.image= [self captureScreen];
+    [popView removeFromSuperview];
+}
+-(void)cancelImageScreen
+{
+    [popView removeFromSuperview];
+}
+-(void)changeImageScreen1
+{
+    wallImage.image= [self captureScreen1];
+    coverImg=wallImage.image;
+    [popView removeFromSuperview];
+}
+-(void)changeusernameScreen
+{
+    changeUsernameViewController *cuvc=[[changeUsernameViewController alloc]init];
+    [self.navigationController pushViewController:cuvc animated:YES];
+}
 @end

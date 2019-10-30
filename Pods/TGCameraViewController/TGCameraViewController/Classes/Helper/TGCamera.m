@@ -141,8 +141,6 @@ NSMutableDictionary *optionDictionary;
 
 - (void)takePhotoWithCaptureView:(UIView *)captureView videoOrientation:(AVCaptureVideoOrientation)videoOrientation cropSize:(CGSize)cropSize completion:(void (^)(UIImage *))completion
 {
-    
-    
     [TGCameraShot takePhotoCaptureView:captureView stillImageOutput:_stillImageOutput videoOrientation:videoOrientation cropSize:cropSize
     completion:^(UIImage *photo) {
         completion(photo);

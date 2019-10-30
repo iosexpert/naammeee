@@ -26,6 +26,7 @@
 #import <SDWebImage/SDWebImage.h>
 #import "smileViewController.h"
 #import  "editPostFilterView.h"
+
 #import  "FiltersViewController.h"
 @interface profileViewController ()<UITextViewDelegate,UICollectionViewDelegate,UICollectionViewDataSource,UITableViewDelegate,UITableViewDataSource>
 {
@@ -33,15 +34,21 @@
     UILabel *followersLbl,*followingLbl,*postsLbl,*repeatLbl,*namelbl;
     UITextView *userDetail,*userwebsite;
     UICollectionView *imageScrollView;
-    UIButton *gridBtn,*listBtn,*likeAction,*usertag;
+    UIButton *gridBtn,*listBtn,*likeAction,*usertag,*repostbtn;;
     NSMutableArray *userImagesArr,*userImagesArr1;
     UITableView *fTable;
-    NSMutableArray *postList,*userLikedArr;
+    NSMutableArray *postList,*userLikedArr,*userrepostArr;
     NSMutableDictionary *userdetaildict;
     UILabel *numberOfLikes;
     
     NSDictionary *detailDict;
     int selectedButtonIndax;
+    int gridButtonSelection;
+    
+    UIView *highlightView;
+    NSURL *webLink;
+    
+    NSDictionary *detailDictForShare;
 
 }
 @end
@@ -56,6 +63,8 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     selectedIndex=-1;
+    gridButtonSelection=0;
+
     userImagesArr1=[NSMutableArray new];
     self.view.backgroundColor= [UIColor whiteColor];
     self.navigationController.navigationBarHidden=true;
@@ -78,6 +87,8 @@
     userImage.layer.borderColor=[UIColor lightGrayColor].CGColor;
     userImage.clipsToBounds=YES;
     [self.view addSubview:userImage];
+    userImage.contentMode=UIViewContentModeScaleAspectFit;
+
     
     namelbl = [[UILabel alloc]initWithFrame:CGRectMake(10, 170,310, 30)];
     namelbl.text = @"";
@@ -184,7 +195,10 @@ UILabel *postsLabel = [[UILabel alloc]initWithFrame:CGRectMake(210, 143, 80, 20)
     userDetail=[[UITextView alloc]initWithFrame:CGRectMake(10, 205,310, 50)];
     userDetail.layer.cornerRadius=5.0;
     userDetail.layer.borderWidth=0.0;
-    userDetail.userInteractionEnabled=false;
+    userDetail.delegate=self;
+       userDetail.editable=false;
+       userDetail.scrollEnabled=false;
+       userDetail.dataDetectorTypes = UIDataDetectorTypeLink;
     userDetail.backgroundColor=[UIColor clearColor];
     userDetail.layer.borderColor=[UIColor lightGrayColor].CGColor;
     [self.view addSubview:userDetail];
@@ -192,34 +206,37 @@ UILabel *postsLabel = [[UILabel alloc]initWithFrame:CGRectMake(210, 143, 80, 20)
     userDetail.delegate=self;
     
     userwebsite=[[UITextView alloc]initWithFrame:CGRectMake(0, 250,self.view.frame.size.width, 25)];
-    userwebsite.layer.cornerRadius=5.0;
-    userwebsite.layer.borderWidth=0.0;
     userwebsite.textAlignment=NSTextAlignmentCenter;
-    userwebsite.userInteractionEnabled=false;
+    userwebsite.userInteractionEnabled=true;
+    userwebsite.scrollEnabled=false;
+    userwebsite.editable=false;
     userwebsite.backgroundColor=[UIColor clearColor];
-    userwebsite.layer.borderColor=[UIColor lightGrayColor].CGColor;
+    userwebsite.layer.borderColor=[UIColor blueColor].CGColor;
     [self.view addSubview:userwebsite];
     userwebsite.text=@"";
-    userwebsite.delegate=self;
-    
+    UITapGestureRecognizer *letterTapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(highlightLetter:)];
+    [userwebsite addGestureRecognizer:letterTapRecognizer];
     
     
     gridBtn = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-    gridBtn.frame = CGRectMake(0, 280, self.view.frame.size.width/4, 40);
+    gridBtn.frame = CGRectMake(0, 280, self.view.frame.size.width/5, 40);
     //[gridBtn setImage:[[UIImage imageNamed:@"9-Dotted-Icon"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] forState:UIControlStateNormal];
     [gridBtn setContentMode:UIViewContentModeScaleAspectFit];
     [gridBtn addTarget:self action:@selector(grid_Action) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:gridBtn];
     
-    UIImageView *img=[[UIImageView alloc]initWithFrame:CGRectMake((self.view.frame.size.width/4)/2-10, 10, 20, 20)];
+    UIImageView *img=[[UIImageView alloc]initWithFrame:CGRectMake((self.view.frame.size.width/5)/2-10, 10, 20, 20)];
     img.image=[UIImage imageNamed:@"9-Dotted-Icon"];
     img.contentMode=UIViewContentModeScaleAspectFit;
     img.userInteractionEnabled=false;
     [gridBtn addSubview:img];
     
+    highlightView=[[UIView alloc]initWithFrame:CGRectMake(gridBtn.frame.size.width/2-5, gridBtn.frame.size.height-10, 10, 7.5)];
+    highlightView.backgroundColor=[UIColor greenColor];
+    [gridBtn addSubview:highlightView];
     
     listBtn = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-    listBtn.frame = CGRectMake(self.view.frame.size.width/4, 280, self.view.frame.size.width/4, 40);
+    listBtn.frame = CGRectMake(self.view.frame.size.width/5, 280, self.view.frame.size.width/5, 40);
     //[listBtn setImage:[[UIImage imageNamed:@"3-line-Icon"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] forState:UIControlStateNormal];
     [listBtn addTarget:self action:@selector(list_Action) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:listBtn];
@@ -232,7 +249,7 @@ UILabel *postsLabel = [[UILabel alloc]initWithFrame:CGRectMake(210, 143, 80, 20)
     
     
     likeAction = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-    likeAction.frame = CGRectMake(self.view.frame.size.width/4+self.view.frame.size.width/4, 280, self.view.frame.size.width/4, 40);
+    likeAction.frame = CGRectMake(self.view.frame.size.width/5+self.view.frame.size.width/5, 280, self.view.frame.size.width/5, 40);
     //[likeAction setImage:[[UIImage imageNamed:@"like-icon"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] forState:UIControlStateNormal];
     [likeAction addTarget:self action:@selector(liked_Action) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:likeAction];
@@ -245,7 +262,7 @@ UILabel *postsLabel = [[UILabel alloc]initWithFrame:CGRectMake(210, 143, 80, 20)
     
     
     usertag = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-    usertag.frame = CGRectMake(self.view.frame.size.width/4+self.view.frame.size.width/4+self.view.frame.size.width/4, 280, self.view.frame.size.width/4, 40);
+    usertag.frame = CGRectMake(self.view.frame.size.width/5+self.view.frame.size.width/5+self.view.frame.size.width/5+self.view.frame.size.width/5, 280, self.view.frame.size.width/5, 40);
    // [usertag setImage:[[UIImage imageNamed:@"user_search"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] forState:UIControlStateNormal];
     [usertag addTarget:self action:@selector(usertag_Action) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:usertag];
@@ -253,7 +270,7 @@ UILabel *postsLabel = [[UILabel alloc]initWithFrame:CGRectMake(210, 143, 80, 20)
    
     UIImage *image = [UIImage imageNamed:@"user_search"];
     
-    UIImageView *img3=[[UIImageView alloc]initWithFrame:CGRectMake((self.view.frame.size.width/4)/2-15, 5, 30, 30)];
+    UIImageView *img3=[[UIImageView alloc]initWithFrame:CGRectMake((self.view.frame.size.width/5)/2-15, 5, 30, 30)];
     img3.image=[image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     [img3 setTintColor:[UIColor blackColor]];
     img3.contentMode=UIViewContentModeScaleAspectFit;
@@ -261,8 +278,64 @@ UILabel *postsLabel = [[UILabel alloc]initWithFrame:CGRectMake(210, 143, 80, 20)
     [usertag addSubview:img3];
     
     
-    // Do any additional setup after loading the view.
+    repostbtn = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    repostbtn.frame = CGRectMake(self.view.frame.size.width/5+self.view.frame.size.width/5+self.view.frame.size.width/5, 280, self.view.frame.size.width/5, 40);
+    // [usertag setImage:[[UIImage imageNamed:@"user_search"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] forState:UIControlStateNormal];
+    [repostbtn addTarget:self action:@selector(repost_Action) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:repostbtn];
+    //[usertag setBackgroundImage:[image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateNormal];
+    
+    UIImage *image1 = [UIImage imageNamed:@"repost"];
+    
+    UIImageView *img5=[[UIImageView alloc]initWithFrame:CGRectMake((self.view.frame.size.width/5)/2-15, 5, 30, 30)];
+    img5.image=[image1 imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    [img5 setTintColor:[UIColor blackColor]];
+    img5.contentMode=UIViewContentModeScaleAspectFit;
+    img5.userInteractionEnabled=false;
+    [repostbtn addSubview:img5];
+    
+    
+    
+    self->fTable = [[UITableView alloc] initWithFrame:CGRectMake(0,self->usertag.frame.size.height+self->usertag.frame.origin.y , self.view.frame.size.width, self.view.frame.size.height-self->usertag.frame.size.height-self->usertag.frame.origin.y ) style:UITableViewStylePlain];
+           self->fTable.delegate = self;
+           self->fTable.dataSource = self;
+           self->fTable.tag=0;
+           self->fTable.backgroundColor = [UIColor clearColor];
+           self->fTable.separatorStyle = UITableViewCellSeparatorStyleNone;
+           [self.view addSubview:self->fTable];
+           self->fTable.hidden=true;
+       
+    
+       UICollectionViewFlowLayout *layout=[[UICollectionViewFlowLayout alloc] init];
+       [layout setScrollDirection:UICollectionViewScrollDirectionVertical];
+           layout.minimumInteritemSpacing = 0;
+           layout.minimumLineSpacing = 0;
+       self->imageScrollView=[[UICollectionView alloc]initWithFrame:CGRectMake(0,self->usertag.frame.size.height+self->usertag.frame.origin.y , self.view.frame.size.width, self.view.frame.size.height-self->usertag.frame.size.height-self->usertag.frame.origin.y ) collectionViewLayout:layout];
+       [self->imageScrollView setCollectionViewLayout:layout];
+       [self->imageScrollView setDataSource:self];
+       [self->imageScrollView setDelegate:self];
+       self->imageScrollView.pagingEnabled=false;
+       [self->imageScrollView registerClass:[UICollectionViewCell class] forCellWithReuseIdentifier:@"cellIdentifier"];
+       [self->imageScrollView setBackgroundColor:[UIColor clearColor]];
+       self->imageScrollView.showsVerticalScrollIndicator=false;
+       self->imageScrollView.showsHorizontalScrollIndicator=false;
+       [self.view addSubview:self->imageScrollView];
+                   
+    
+    
+    
+    
+    
+    
+    
 }
+- (void)highlightLetter:(UITapGestureRecognizer*)sender {
+    
+    
+    [[UIApplication sharedApplication] openURL:webLink];
+
+}
+
 -(void)followerBtn:(UITapGestureRecognizer *)gesture
 {
     myFollowerViewController *smvc = [[myFollowerViewController alloc]init];
@@ -290,14 +363,16 @@ UILabel *postsLabel = [[UILabel alloc]initWithFrame:CGRectMake(210, 143, 80, 20)
                                                                error:nil];
         NSLog(@"JSON totalLikePostByUser: %@", json);
         [Helper hideIndicatorFromView:self.view];
-        
         if ([[json objectForKey:@"success"]integerValue]==1)
         {
             self->userLikedArr=[json valueForKey:@"postDetails"];
             [self->fTable reloadData];
+            [self getRpeatPost];
+
         }
         else
         {
+            [self getRpeatPost];
             [self->fTable reloadData];
         }
         
@@ -310,9 +385,52 @@ UILabel *postsLabel = [[UILabel alloc]initWithFrame:CGRectMake(210, 143, 80, 20)
           }];
 
 }
+-(void)getRpeatPost
+{
+    NSLog(@"totalrePostByUser: %@", [[NSUserDefaults standardUserDefaults]stringForKey:@"uid"]);
+    
+    AFHTTPSessionManager *manager = [AFHTTPSessionManager manager];
+    NSDictionary *params = @{
+                             @"method"       : @"totalrePostByUser",
+                             @"userid"       : [[NSUserDefaults standardUserDefaults]stringForKey:@"userid"],
+                             };
+    manager.responseSerializer = [AFHTTPResponseSerializer serializer];
+    manager.responseSerializer.acceptableContentTypes = nil;
+    [manager POST:@"http://naamee.com/api/webservices/index.php?format=json" parameters:params progress:nil success:^(NSURLSessionTask *task, id responseObject) {
+        NSDictionary* json = [NSJSONSerialization JSONObjectWithData:responseObject
+                                                             options:kNilOptions
+                                                               error:nil];
+        NSLog(@"JSON totalrePostByUser: %@", json);
+        [Helper hideIndicatorFromView:self.view];
+        
+        if ([[json objectForKey:@"success"]integerValue]==1)
+        {
+            self->userrepostArr=[[json valueForKey:@"postDetails"] mutableCopy];
+            [self->imageScrollView reloadData];
+        }
+        else
+        {
+            [self->imageScrollView reloadData];
+        }
+        
+    }
+          failure:^(NSURLSessionTask *operation, NSError *error)
+     {
+         NSLog(@"Error: %@", error);
+         [Helper hideIndicatorFromView:self.view];
+         
+     }];
+    
+}
 -(void)liked_Action
 {
 //    [self getLikedPost];
+    gridButtonSelection=2;
+
+         [highlightView removeFromSuperview];
+         highlightView=[[UIView alloc]initWithFrame:CGRectMake(likeAction.frame.size.width/2+6, likeAction.frame.size.height-10, 10, 7.5)];
+         highlightView.backgroundColor=[UIColor greenColor];
+         [likeAction addSubview:highlightView];
     
     userImagesArr1=[userLikedArr mutableCopy];
     if(userImagesArr1.count == 0)
@@ -333,7 +451,7 @@ UILabel *postsLabel = [[UILabel alloc]initWithFrame:CGRectMake(210, 143, 80, 20)
     NSDictionary *params = @{
                              @"method"       : @"userDetails",
                              @"userid"       : [[NSUserDefaults standardUserDefaults]valueForKey:@"userid"],
-                            @"device"       :[NSString stringWithFormat:@"%0.0f", self.view.frame.size.width]};
+                             @"device"       :[NSString stringWithFormat:@"%0.0f", self.view.frame.size.width]};
 
     manager.responseSerializer = [AFHTTPResponseSerializer serializer];
     manager.responseSerializer.acceptableContentTypes = nil;
@@ -358,12 +476,39 @@ UILabel *postsLabel = [[UILabel alloc]initWithFrame:CGRectMake(210, 143, 80, 20)
             NSDictionary *dict=[[json objectForKey:@"userDetails"]objectAtIndex:0];
             [[NSUserDefaults standardUserDefaults]setValue:[dict valueForKey:@"fullname"] forKey:@"name"];
             self->userwebsite.text=[dict valueForKey:@"website"];
+                if ([[dict valueForKey:@"website"] rangeOfString:@"http"].location == NSNotFound) {
+                    self->webLink=[NSURL URLWithString:[NSString stringWithFormat:@"http://%@",[dict valueForKey:@"website"]]];
+                }
+            else
+            {
+                self->webLink=[NSURL URLWithString:[dict valueForKey:@"website"]];
+
+            }
             self->namelbl.text=[dict valueForKey:@"fullname"];
             
             NSData *data = [NSData dataWithBytes: [[dict valueForKey:@"description"] UTF8String] length:strlen([[dict valueForKey:@"description"] UTF8String])];
             NSString *msg = [[NSString alloc] initWithData:data encoding:NSNonLossyASCIIStringEncoding];
             
-            self->userDetail.text=msg;
+            
+             NSArray *components=[[NSString stringWithFormat:@"%@",msg] componentsSeparatedByString:@" "];
+               NSMutableAttributedString * string = [[NSMutableAttributedString alloc] initWithString:msg];
+               for(int i=0;i<components.count;i++)
+               {
+                   if([components[i] length]>1)
+                   {
+                       if([[components[i] substringToIndex:1] isEqualToString:@"#"])
+                       {
+                           NSString *sttt=msg;
+                           NSRange rangee= [sttt rangeOfString: components[i]];
+                           [string addAttribute:NSLinkAttributeName value:@"click" range:rangee];
+                           [string addAttribute:NSForegroundColorAttributeName value:[UIColor blackColor] range:rangee];
+                       }
+                   }
+                   
+               }
+            
+            
+            self->userDetail.attributedText=string;
             
             self->userImage.imageURL=[NSURL URLWithString:[NSString stringWithFormat:@"http://naamee.com/api/webservices/images/%@",[dict valueForKey:@"profile_pic"]]];
             
@@ -372,41 +517,28 @@ UILabel *postsLabel = [[UILabel alloc]initWithFrame:CGRectMake(210, 143, 80, 20)
             
             self->userImagesArr=[[json valueForKey:@"allPost"]mutableCopy];
             self->postList=[[json valueForKey:@"allPost"]mutableCopy];
-            self->userImagesArr1 = [self->userImagesArr mutableCopy];
             if(self->userImagesArr.count>0)
             {
                 if(self->imageScrollView)
                 {
+                    if(self->gridButtonSelection==0)
+                       [self grid_Action];
+                    if(self->gridButtonSelection==1)
+                            [self list_Action];
+                    if(self->gridButtonSelection==2)
+                            [self liked_Action];
+                    if(self->gridButtonSelection==3)
+                        [self repost_Action];
+                    
                     [self->imageScrollView reloadData];
                     [self->fTable reloadData];
                 }
                 else
                 {
-                    self->fTable = [[UITableView alloc] initWithFrame:CGRectMake(0,self->usertag.frame.size.height+self->usertag.frame.origin.y , self.view.frame.size.width, self.view.frame.size.height-self->usertag.frame.size.height-self->usertag.frame.origin.y ) style:UITableViewStylePlain];
-                    self->fTable.delegate = self;
-                    self->fTable.dataSource = self;
-                    self->fTable.tag=0;
-                    self->fTable.backgroundColor = [UIColor clearColor];
-                    self->fTable.separatorStyle = UITableViewCellSeparatorStyleNone;
-                    [self.view addSubview:self->fTable];
-                    self->fTable.hidden=true;
-                
-                UICollectionViewFlowLayout *layout=[[UICollectionViewFlowLayout alloc] init];
-                [layout setScrollDirection:UICollectionViewScrollDirectionVertical];
-                    layout.minimumInteritemSpacing = 0;
-                    layout.minimumLineSpacing = 0;
+                    self->userImagesArr1 = [self->userImagesArr mutableCopy];
+                    [self->imageScrollView reloadData];
 
-                self->imageScrollView=[[UICollectionView alloc]initWithFrame:CGRectMake(0,self->usertag.frame.size.height+self->usertag.frame.origin.y , self.view.frame.size.width, self.view.frame.size.height-self->usertag.frame.size.height-self->usertag.frame.origin.y ) collectionViewLayout:layout];
-                [self->imageScrollView setCollectionViewLayout:layout];
-                [self->imageScrollView setDataSource:self];
-                [self->imageScrollView setDelegate:self];
-                self->imageScrollView.pagingEnabled=false;
-                [self->imageScrollView registerClass:[UICollectionViewCell class] forCellWithReuseIdentifier:@"cellIdentifier"];
-                [self->imageScrollView setBackgroundColor:[UIColor clearColor]];
-                self->imageScrollView.showsVerticalScrollIndicator=false;
-                self->imageScrollView.showsHorizontalScrollIndicator=false;
-                [self.view addSubview:self->imageScrollView];
-                
+                   
                 
                 [[NSUserDefaults standardUserDefaults] setObject:[NSString stringWithFormat:@"%@", [dict valueForKey:@"profile_pic"]] forKey:@"profilePic"];
                 [[NSUserDefaults standardUserDefaults] setObject:[NSString stringWithFormat:@"%@", [dict valueForKey:@"coverPic"]] forKey:@"coverPic"];
@@ -444,18 +576,69 @@ UILabel *postsLabel = [[UILabel alloc]initWithFrame:CGRectMake(210, 143, 80, 20)
 }
 -(void)grid_Action
 {
+    gridButtonSelection=0;
+    [highlightView removeFromSuperview];
+      highlightView=[[UIView alloc]initWithFrame:CGRectMake(gridBtn.frame.size.width/2-5, gridBtn.frame.size.height-10, 10, 7.5)];
+      highlightView.backgroundColor=[UIColor greenColor];
+      [gridBtn addSubview:highlightView];
+    
     userImagesArr1 = [userImagesArr mutableCopy];
     self->imageScrollView.hidden=false;
-  self->fTable.hidden=true;
+     self->fTable.hidden=true;
      [imageScrollView reloadData];
+}
+-(void)repost_Action
+{
+    gridButtonSelection=3;
+
+    [highlightView removeFromSuperview];
+    highlightView=[[UIView alloc]initWithFrame:CGRectMake(repostbtn.frame.size.width/2-5, repostbtn.frame.size.height-10, 10, 7.5)];
+    highlightView.backgroundColor=[UIColor greenColor];
+    [repostbtn addSubview:highlightView];
+    
+    userImagesArr1 = [userrepostArr mutableCopy];
+    self->imageScrollView.hidden=false;
+    self->fTable.hidden=true;
+    [imageScrollView reloadData];
 }
 -(void)list_Action
 {
+    gridButtonSelection=1;
+
+    [highlightView removeFromSuperview];
+       highlightView=[[UIView alloc]initWithFrame:CGRectMake(listBtn.frame.size.width/2+5, listBtn.frame.size.height-10, 10, 7.5)];
+       highlightView.backgroundColor=[UIColor greenColor];
+       [listBtn addSubview:highlightView];
+    
     self->imageScrollView.hidden=true;
     self->fTable.hidden=false;
 }
 #pragma mark - Text view deligates
-- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
+- (BOOL)textView:(UITextView*)textView shouldInteractWithURL:(nonnull NSURL *)URL inRange:(NSRange)characterRange interaction:(UITextItemInteraction)interaction
+{
+    
+    NSLog(@"%@",[textView.text substringWithRange: characterRange]);
+    
+    NSString *testString = textView.text;
+    NSDataDetector *detect = [[NSDataDetector alloc] initWithTypes:NSTextCheckingTypeLink error:nil];
+    NSArray *matches = [detect matchesInString:testString options:0 range:NSMakeRange(0, [testString length])];
+   
+    if (matches.count == 0){
+        NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+        [userDefaults setObject:[[textView.text substringWithRange: characterRange] substringFromIndex:1] forKey:@"hashtag"];
+        [userDefaults synchronize];
+        hashtagScreenView *smvc = [[hashtagScreenView alloc]init];
+        [self.navigationController pushViewController:smvc animated:YES];
+        return NO;
+        
+    }else{
+        return true;
+    }
+    
+    
+    
+    
+}- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
     
     if ([text isEqualToString:@"\n"]) {
         
@@ -532,15 +715,17 @@ UILabel *postsLabel = [[UILabel alloc]initWithFrame:CGRectMake(210, 143, 80, 20)
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath
 {
     NSDictionary *dic;
-    NSLog(@"indexpath : %d",indexPath.item);
+    NSLog(@"indexpath : %d",(int)indexPath.item);
     dic=[self->userImagesArr1 objectAtIndex:indexPath.item];
     NSLog(@"dic : %@",[dic objectForKey:@"post_id"]);
    
     if([dic objectForKey:@"post_id"]!= nil)
         [[NSUserDefaults standardUserDefaults]setValue:[dic objectForKey:@"post_id"] forKey:@"postid"];
-else
-    [[NSUserDefaults standardUserDefaults]setValue:[dic objectForKey:@"postid"] forKey:@"postid"];
-//    [[NSUserDefaults standardUserDefaults]setValue:dic forKey:@"explore"];
+    else if([dic objectForKey:@"postid"]!= nil)
+        [[NSUserDefaults standardUserDefaults]setValue:[dic objectForKey:@"postid"] forKey:@"postid"];
+    else
+    [[NSUserDefaults standardUserDefaults]setValue:[dic objectForKey:@"sharePostid"] forKey:@"postid"];
+    
     [[NSUserDefaults standardUserDefaults]setBool:YES forKey:@"isFromProfile"];
   
     otherImageView *smvc = [[otherImageView alloc]init];
@@ -734,6 +919,8 @@ else
     frame.size.height=rect.size.height+8;
     caption.frame=frame;
     
+    [caption sizeToFit];
+    
     float yCoordinate=caption.frame.origin.y+caption.frame.size.height-4;
     UIImageView *moodimage;
     UITextView *moodhashtag;
@@ -778,6 +965,7 @@ else
         
         [cell.contentView addSubview:moodimage];
         [cell.contentView addSubview:moodhashtag];
+        [moodhashtag sizeToFit];
         
         yCoordinate=yCoordinate+20;
     }
@@ -823,6 +1011,8 @@ else
         
         [cell.contentView addSubview:wearingimage];
         [cell.contentView addSubview:wearinghashtag];
+        [wearinghashtag sizeToFit];
+
         
         yCoordinate=yCoordinate+20;
     }
@@ -867,7 +1057,8 @@ else
         
         [cell.contentView addSubview:listeningimage];
         [cell.contentView addSubview:listenhashtag];
-        
+        [listenhashtag sizeToFit];
+
         yCoordinate=yCoordinate+20;
     }
     
@@ -906,7 +1097,8 @@ else
         
         watchhashtag.attributedText=string;
         watchhashtag.font=[UIFont systemFontOfSize:13];
-        
+        [watchhashtag sizeToFit];
+
         [cell.contentView addSubview:watchimage];
         [cell.contentView addSubview:watchhashtag];
         
@@ -955,7 +1147,8 @@ else
         
         [cell.contentView addSubview:locationimage];
         [cell.contentView addSubview:locationhashtag];
-        
+        [locationhashtag sizeToFit];
+
         yCoordinate=yCoordinate+20;
     }
     
@@ -1231,81 +1424,83 @@ else
         
     }
     //  userImage.imageURL=[NSURL URLWithString:[NSString stringWithFormat:@"http://naamee.com/api/webservices/images/%@",[[NSUserDefaults standardUserDefaults]valueForKey:@"profilePic"]]];
+    NSLog(@"%@",[[NSUserDefaults standardUserDefaults]valueForKey:@"myProfile"]);
     
+    NSDictionary *profileDict=[[[NSUserDefaults standardUserDefaults]valueForKey:@"myProfile"]valueForKey:@"userDetails"][0];
     UILabel *username=[[UILabel alloc]initWithFrame:CGRectMake(56, 4, self.view.frame.size.width, 20)];
-    username.text=[dic objectForKey:@"userName"];
+    username.text=[profileDict valueForKey:@"username"];
     username.textColor=[Helper colorFromHexString:@"1b73b1"];
-    username.font=[UIFont fontWithName:@"Helvetica Neue Medium" size:15];
+    username.font=[UIFont fontWithName:@"HelveticaNeue-Bold" size:18];
     //username.backgroundColor = [UIColor whiteColor];
     [username sizeToFit];
     
     
     
-    UILabel *address=[[UILabel alloc]initWithFrame:CGRectMake(75, 28, self.view.frame.size.width-120, 40)];
-    address.text=[dic objectForKey:@"address"];
-    address.numberOfLines=2;
-    address.textAlignment=NSTextAlignmentCenter;
-    address.textColor=[Helper colorFromHexString:@"d0d0d0"];
-    address.font=[UIFont fontWithName:@"Helvetica Neue" size:10];
-    address.lineBreakMode = NSLineBreakByWordWrapping;
-    //address.backgroundColor = [UIColor whiteColor];
-    [address sizeToFit];
+//    UILabel *address=[[UILabel alloc]initWithFrame:CGRectMake(75, 28, self.view.frame.size.width-120, 40)];
+//    address.text=[profileDict valueForKey:@"address"];
+//    address.numberOfLines=2;
+//    address.textAlignment=NSTextAlignmentCenter;
+//    address.textColor=[Helper colorFromHexString:@"d0d0d0"];
+//    address.font=[UIFont fontWithName:@"Helvetica Neue" size:10];
+//    address.lineBreakMode = NSLineBreakByWordWrapping;
+//    //address.backgroundColor = [UIColor whiteColor];
+//    [address sizeToFit];
     
-    UIView *addressView;
-    if (![[dic objectForKey:@"address"] isKindOfClass:[NSNull class]] && [[dic objectForKey:@"address"] length]>0)
-    {
-        addressView = [[UIView alloc]initWithFrame:CGRectMake(56, 28, 15+4+address.frame.size.width+2, 40)];
-        //addressView.backgroundColor = [UIColor whiteColor];
-        
-        UIImageView *addressIcon=[[UIImageView alloc]initWithFrame:CGRectMake(0, 2.5, 15, 15)];
-        addressIcon.image=[UIImage imageNamed:@"marker.png"];
-        
-        address.frame=CGRectMake(19, 0, address.frame.size.width, 20);
-        
-        [addressView addSubview:addressIcon];
-        [addressView addSubview:address];
-    }
-    addressView.tag=section;
-    addressView.userInteractionEnabled=YES;
-    UITapGestureRecognizer *gestureloc=[[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(addressLocation:)];
-    [addressView addGestureRecognizer:gestureloc];
-    
-    UILabel *time=[[UILabel alloc]initWithFrame:CGRectMake(20, 0, 60, 20)];
-    NSLog(@"%@     %@",[NSDate mysqlDatetimeFormattedAsTimeAgo:[dic objectForKey:@"created"]],[dic objectForKey:@"created"]);
-    time.text=[NSDate mysqlDatetimeFormattedAsTimeAgo:[dic objectForKey:@"created"]];
-    time.textColor=[Helper colorFromHexString:@"8c95a1"];
-    time.font=[UIFont fontWithName:@"Helvetica Neue" size:12];
-    //time.backgroundColor = [UIColor whiteColor];
-    [time sizeToFit];
-    
-    UIView *timeView;
-    
-    timeView = [[UIView alloc]initWithFrame:CGRectMake(self.view.frame.size.width-70, userImage.frame.origin.y, 15+5+time.frame.size.width+2, 20)];
-    //timeView.backgroundColor = [UIColor whiteColor];
-    
-    UIImageView *timeIcon=[[UIImageView alloc]initWithFrame:CGRectMake(0, 2.5, 15, 15)];
-    timeIcon.image=[UIImage imageNamed:@"time"];
-    
-    time.frame=CGRectMake(20, 0, time.frame.size.width, 20);
-    
-    [timeView addSubview:timeIcon];
-    [timeView addSubview:time];
-    
+//    UIView *addressView;
+//    if (![[profileDict valueForKey:@"address"] isKindOfClass:[NSNull class]] && [[profileDict valueForKey:@"address"] length]>0)
+//    {
+//        addressView = [[UIView alloc]initWithFrame:CGRectMake(56, 28, 15+4+address.frame.size.width+2, 40)];
+//        //addressView.backgroundColor = [UIColor whiteColor];
+//
+//        UIImageView *addressIcon=[[UIImageView alloc]initWithFrame:CGRectMake(0, 2.5, 15, 15)];
+//        addressIcon.image=[UIImage imageNamed:@"marker.png"];
+//
+//        address.frame=CGRectMake(19, 0, address.frame.size.width, 20);
+//
+//        [addressView addSubview:addressIcon];
+//        [addressView addSubview:address];
+//    }
+//    addressView.tag=section;
+//    addressView.userInteractionEnabled=YES;
+//    UITapGestureRecognizer *gestureloc=[[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(addressLocation:)];
+//    [addressView addGestureRecognizer:gestureloc];
+//
+//    UILabel *time=[[UILabel alloc]initWithFrame:CGRectMake(20, 0, 60, 20)];
+//    NSLog(@"%@     %@",[NSDate mysqlDatetimeFormattedAsTimeAgo:[dic objectForKey:@"created"]],[dic objectForKey:@"created"]);
+//    time.text=[NSDate mysqlDatetimeFormattedAsTimeAgo:[[[NSUserDefaults standardUserDefaults]valueForKey:@"myProfile"]valueForKey:@"created"]];
+//    time.textColor=[Helper colorFromHexString:@"8c95a1"];
+//    time.font=[UIFont fontWithName:@"Helvetica Neue" size:12];
+//    //time.backgroundColor = [UIColor whiteColor];
+//    [time sizeToFit];
+//
+//    UIView *timeView;
+//
+//    timeView = [[UIView alloc]initWithFrame:CGRectMake(self.view.frame.size.width-70, userImage.frame.origin.y, 15+5+time.frame.size.width+2, 20)];
+//    //timeView.backgroundColor = [UIColor whiteColor];
+//
+//    UIImageView *timeIcon=[[UIImageView alloc]initWithFrame:CGRectMake(0, 2.5, 15, 15)];
+//    timeIcon.image=[UIImage imageNamed:@"time"];
+//
+//    time.frame=CGRectMake(20, 0, time.frame.size.width, 20);
+//
+//    [timeView addSubview:timeIcon];
+//    [timeView addSubview:time];
+//
     UIView *lineView=[[UIView alloc]initWithFrame:CGRectMake(0, 59.5, self.view.frame.size.width, 0.5)];
     lineView.backgroundColor=[UIColor lightGrayColor];
     lineView.alpha=0.5;
-    
+//
     [mainView addSubview:userCover];
     [mainView addSubview:blackView];
     [mainView addSubview:userImage];
     [mainView addSubview:username];
     //[mainView addSubview:addressIcon];
     //[mainView addSubview:address];
-    [mainView addSubview:addressView];
-    [mainView addSubview:timeView];
+//    [mainView addSubview:addressView];
+//    [mainView addSubview:timeView];
     //[mainView addSubview:time];
     [mainView addSubview:lineView];
-    
+
     mainView.userInteractionEnabled=YES;
     mainView.tag=section;
     UITapGestureRecognizer *gesture  =[[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(viewProfile:)];
@@ -1387,31 +1582,7 @@ else
         [fTable scrollToRowAtIndexPath:ip atScrollPosition:UITableViewScrollPositionTop animated:NO];
     }
 }
-- (BOOL)textView:(UITextView*)textView shouldInteractWithURL:(nonnull NSURL *)URL inRange:(NSRange)characterRange interaction:(UITextItemInteraction)interaction
-{
-    
-    NSLog(@"%@",[textView.text substringWithRange: characterRange]);
-    
-    NSString *testString = textView.text;
-    NSDataDetector *detect = [[NSDataDetector alloc] initWithTypes:NSTextCheckingTypeLink error:nil];
-    NSArray *matches = [detect matchesInString:testString options:0 range:NSMakeRange(0, [testString length])];
-    
-    if (matches.count == 0){
-        NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-        [userDefaults setObject:[[textView.text substringWithRange: characterRange] substringFromIndex:1] forKey:@"hashtag"];
-        [userDefaults synchronize];
-        hashtagScreenView *smvc = [[hashtagScreenView alloc]init];
-        [self.navigationController pushViewController:smvc animated:YES];
-        return NO;
-        
-    }else{
-        return true;
-    }
-    
-    
-    
-    
-}
+
 -(void)otheruserProfileOpen1:(UITapGestureRecognizer*)gesture
 {
     NSDictionary *dic=[postList objectAtIndex:gesture.view.tag];
@@ -1453,7 +1624,7 @@ else
 {
     NSDictionary *dic=[postList objectAtIndex:gesture.view.tag];
     NSLog(@"%@",dic);
-    
+    detailDictForShare=[dic mutableCopy];
     NSString *st;
     if([[dic objectForKey:@"sharePostid"]isEqualToString:@""])
     {
@@ -1517,7 +1688,17 @@ else
             //share
             UIImageView *fullImage = (UIImageView *)[self.view viewWithTag:1000+selectedButtonIndax];
             
-            NSArray *objectsToShare = @[fullImage.image];
+            
+            NSString *capString=[detailDict valueForKey:@"caption"];
+                                  capString=  [NSString stringWithFormat:@"%@ %@",capString,[detailDict valueForKey:@"mood"]];
+                                  capString=  [NSString stringWithFormat:@"%@ %@",capString,[detailDict valueForKey:@"wearing"]];
+                                  capString=  [NSString stringWithFormat:@"%@ %@",capString,[detailDict valueForKey:@"watching"]];
+                                  capString=  [NSString stringWithFormat:@"%@ %@",capString,[detailDict valueForKey:@"listening"]];
+                                  capString=  [NSString stringWithFormat:@"%@ %@",capString,[detailDict valueForKey:@"location"]];
+            
+            NSArray *objectsToShare = @[capString, fullImage.image];
+
+            
             
             UIActivityViewController *activityVC = [[UIActivityViewController alloc] initWithActivityItems:objectsToShare applicationActivities:nil];
             
@@ -1627,7 +1808,9 @@ else
         
         if ([[json objectForKey:@"success"]integerValue]==1)
         {
+            [self viewWillAppear:0];
             [[NSNotificationCenter defaultCenter] postNotificationName:@"DeleteMyPost" object:self->detailDict];
+            
             //[self.navigationController popViewControllerAnimated:YES];
         }
         else

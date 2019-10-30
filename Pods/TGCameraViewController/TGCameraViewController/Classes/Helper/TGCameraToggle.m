@@ -61,14 +61,9 @@
     AVCaptureDevicePosition reversePosition;
     
     if ([deviceInput.device position] == AVCaptureDevicePositionFront) {
-        [[NSUserDefaults standardUserDefaults]setValue:@"no" forKey:@"front"];
-
         reversePosition = AVCaptureDevicePositionBack;
     } else {
-        [[NSUserDefaults standardUserDefaults]setValue:@"yes" forKey:@"front"];
         reversePosition = AVCaptureDevicePositionFront;
-        
-        
     }
     
     //

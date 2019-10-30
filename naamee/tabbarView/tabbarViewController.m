@@ -75,13 +75,20 @@ UIImage *imgSelected3 = [[UIImage imageNamed:@"bell"]imageWithRenderingMode:UIIm
     cvc.navigationController.navigationBarHidden=true;
     nvc.navigationController.navigationBarHidden=true;
     pvc.navigationController.navigationBarHidden=true;
+    
 
     hvc.tabBarItem.imageInsets = UIEdgeInsetsMake(6, 0, -6, 0);
+    hvc.title=nil;
     fvc.tabBarItem.imageInsets = UIEdgeInsetsMake(6, 0, -6, 0);
+    fvc.title=nil;
     cvc.tabBarItem.imageInsets = UIEdgeInsetsMake(6, 0, -6, 0);
+    cvc.title=nil;
     nvc.tabBarItem.imageInsets = UIEdgeInsetsMake(6, 0, -6, 0);
+    nvc.title=nil;
     pvc.tabBarItem.imageInsets = UIEdgeInsetsMake(6, 0, -6, 0);
+    pvc.title=nil;
 
+    
     UINavigationController *nav1=[[UINavigationController alloc]initWithRootViewController:hvc];
     UINavigationController *nav2=[[UINavigationController alloc]initWithRootViewController:fvc];
     UINavigationController *nav3=[[UINavigationController alloc]initWithRootViewController:cvc];

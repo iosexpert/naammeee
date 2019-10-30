@@ -17,10 +17,12 @@
 {
     UIButton *folowersBtn,*youBtn;
     NSMutableArray *notificationArr,*younotificationArr;
-    UITableView *fTable;
+    UITableView *fTable,*fTable1;
     int selectedIndex;
     UIView *selectionViewShown;
     int selectedTab;
+    UIScrollView *scrv;
+
 
 }
 @end
@@ -33,13 +35,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    self->fTable = [[UITableView alloc] initWithFrame:CGRectMake(0,64 , self.view.frame.size.width,self.view.frame.size.height-64 ) style:UITableViewStylePlain];
-    self->fTable.delegate = self;
-    self->fTable.dataSource = self;
-    self->fTable.tag=0;
-    self->fTable.backgroundColor = [UIColor clearColor];
-    self->fTable.separatorStyle = UITableViewCellSeparatorStyleNone;
-    [self.view addSubview:self->fTable];
+    
     
     UIView *navigationView=[[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 64)];
     navigationView.backgroundColor=[UIColor colorWithRed:31/255.0 green:142/255.0 blue:212/255.0 alpha:1.0];
@@ -54,7 +50,7 @@
     [folowersBtn addTarget:self action:@selector(followers_action) forControlEvents:UIControlEventTouchUpInside];
     [navigationView addSubview:folowersBtn];
     
-    selectedTab=0;
+    selectedTab=1;
     youBtn = [UIButton buttonWithType:UIButtonTypeRoundedRect];
     youBtn.frame = CGRectMake(self.view.frame.size.width/2, 20, self.view.frame.size.width/2, 44);
     youBtn.backgroundColor=[UIColor clearColor];
@@ -71,6 +67,30 @@
     UIView *greenv=[[UIView alloc]initWithFrame:CGRectMake(10, 0, self.view.frame.size.width/2-20, 5)];
     greenv.backgroundColor=[UIColor greenColor];
     [selectionViewShown addSubview:greenv];
+    
+    scrv=[[UIScrollView alloc]initWithFrame:CGRectMake(0, 64, self.view.frame.size.width, self.view.frame.size.height-64-40)];
+       scrv.contentSize=CGSizeMake(self.view.frame.size.width*2, self.view.frame.size.height-64-40);
+       [self.view addSubview:scrv];
+       scrv.pagingEnabled=true;
+       scrv.showsHorizontalScrollIndicator=false;
+       scrv.delegate=self;
+    
+    self->fTable = [[UITableView alloc] initWithFrame:CGRectMake(0,0 , self.view.frame.size.width,scrv.frame.size.height ) style:UITableViewStylePlain];
+    self->fTable.delegate = self;
+    self->fTable.dataSource = self;
+    self->fTable.tag=1;
+    self->fTable.backgroundColor = [UIColor clearColor];
+    self->fTable.separatorStyle = UITableViewCellSeparatorStyleNone;
+    [scrv addSubview:self->fTable];
+    
+    self->fTable1 = [[UITableView alloc] initWithFrame:CGRectMake(self.view.frame.size.width,0 , scrv.frame.size.width,scrv.frame.size.height ) style:UITableViewStylePlain];
+    self->fTable1.delegate = self;
+    self->fTable1.dataSource = self;
+    self->fTable1.tag=0;
+    self->fTable1.backgroundColor = [UIColor clearColor];
+    self->fTable1.separatorStyle = UITableViewCellSeparatorStyleNone;
+    [scrv addSubview:self->fTable1];
+       
     
     // Do any additional setup after loading the view.
 }
@@ -102,9 +122,9 @@
         
         if ([[json objectForKey:@"success"]integerValue]==1)
         {
-            
+            //
             self->notificationArr=[[json objectForKey:@"notification"]mutableCopy];
-            [self->fTable reloadData];
+            [self->fTable1 reloadData];
         }
         else
         {
@@ -165,28 +185,60 @@
 {
     [folowersBtn setTintColor:[UIColor whiteColor]];
     [youBtn setTintColor:[UIColor lightGrayColor]];
-    selectedTab=0;
+    
+    scrv.contentOffset=CGPointMake(0, 0);
+    selectedTab=1;
     CGRect f = selectionViewShown.frame;
     f.origin.x = 10;
     selectionViewShown.frame = f;
-    [fTable reloadData];
+    [fTable1 reloadData];
 }
 -(void)you_action
 {
+    scrv.contentOffset=CGPointMake(self.view.frame.size.width, 0);
+
     [youBtn setTintColor:[UIColor whiteColor]];
     [folowersBtn setTintColor:[UIColor lightGrayColor]];
-    selectedTab=1;
+    selectedTab=0;
     CGRect f = selectionViewShown.frame;
     f.origin.x = self.view.frame.size.width/2;;
     selectionViewShown.frame = f;
     [fTable reloadData];
 
 }
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView
+{
+   
+    if(scrv.contentOffset.x<self.view.frame.size.width-100)
+    {
+       [folowersBtn setTintColor:[UIColor whiteColor]];
+        [youBtn setTintColor:[UIColor lightGrayColor]];
+        
+        selectedTab=1;
+        CGRect f = selectionViewShown.frame;
+        f.origin.x = 10;
+        selectionViewShown.frame = f;
+       // [fTable reloadData];
+        
+    }
+    else
+    {
+
+        [youBtn setTintColor:[UIColor whiteColor]];
+        [folowersBtn setTintColor:[UIColor lightGrayColor]];
+        selectedTab=0;
+        CGRect f = selectionViewShown.frame;
+        f.origin.x = self.view.frame.size.width/2;;
+        selectionViewShown.frame = f;
+        //[fTable1 reloadData];
+
+    }
+}
 #pragma mark -- TableView Delegate
 
 -(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-    if(selectedTab==1)
+    if(tableView.tag==0)
     return notificationArr.count;
     else
     return younotificationArr.count;
@@ -205,12 +257,16 @@
     {
         [v removeFromSuperview];
     }
+    int fonti =12;
+    if(self.view.frame.size.height>=812)
+        fonti=15;
+    
     NSDictionary *dic;
-    if(selectedTab==1)
+    if(tableView.tag==0)
     dic=[notificationArr objectAtIndex:indexPath.section];
     else
         dic=[younotificationArr objectAtIndex:indexPath.section];
- if(selectedTab==1)
+ if(tableView.tag==0)
  {
     if([[dic valueForKey:@"notificationtype"]isEqualToString:@"like"])
     {
@@ -231,18 +287,18 @@
         [nameBtn setTintColor:[UIColor blackColor]];
         nameBtn.tag=indexPath.section;
         [nameBtn addTarget:self action:@selector(profileAction:) forControlEvents:UIControlEventTouchUpInside];
-        nameBtn.titleLabel.font=[UIFont fontWithName:@"Helvetica Neue Medium" size:13];
+        nameBtn.titleLabel.font=[UIFont fontWithName:@"Helvetica-Bold" size:fonti];
         [nameBtn sizeToFit];
         [cell addSubview:nameBtn];
         
         UIButton *likedLbl = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-        likedLbl.frame = CGRectMake(nameBtn.frame.origin.x+nameBtn.frame.size.width+5, 23, 200, 30);
+        likedLbl.frame = CGRectMake(nameBtn.frame.origin.x+nameBtn.frame.size.width+5, 20, 200, 30);
         likedLbl.backgroundColor=[UIColor clearColor];
         [likedLbl setTitle:@"liked your post." forState:UIControlStateNormal];
         [likedLbl setTintColor:[UIColor blackColor]];
         likedLbl.tag=indexPath.section;
         likedLbl.userInteractionEnabled=false;
-        likedLbl.titleLabel.font=[UIFont fontWithName:@"Helvetica Neue" size:12];
+        likedLbl.titleLabel.font=[UIFont fontWithName:@"Helvetica" size:fonti];
         [likedLbl sizeToFit];
         [cell addSubview:likedLbl];
         
@@ -261,6 +317,57 @@
         [postImage addGestureRecognizer:gesture];
         
     }
+     if([[dic valueForKey:@"notificationtype"]isEqualToString:@"repost"])
+     {
+         AsyncImageView *userImage=[[AsyncImageView alloc]initWithFrame:CGRectMake(5, 10, 80, 80)];
+         userImage.userInteractionEnabled=YES;
+         NSString *url;
+         url=[NSString stringWithFormat:@"http://naamee.com/api/webservices/images/%@", [dic valueForKey:@"userImage"]];
+         userImage.imageURL=[NSURL URLWithString:url];
+         userImage.contentMode=UIViewContentModeScaleAspectFill;
+         userImage.layer.cornerRadius=40;
+         userImage.clipsToBounds = true;
+         [cell addSubview:userImage];
+         
+         UIButton *nameBtn = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+         nameBtn.frame = CGRectMake(90, 20, 200, 30);
+         nameBtn.backgroundColor=[UIColor clearColor];
+         [nameBtn setTitle:[dic valueForKey:@"userName"] forState:UIControlStateNormal];
+         [nameBtn setTintColor:[UIColor blackColor]];
+         nameBtn.tag=indexPath.section;
+         [nameBtn addTarget:self action:@selector(profileAction:) forControlEvents:UIControlEventTouchUpInside];
+         nameBtn.titleLabel.font=[UIFont fontWithName:@"Helvetica-Bold" size:fonti];
+         [nameBtn sizeToFit];
+         [cell addSubview:nameBtn];
+         
+         UIButton *likedLbl = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+//         likedLbl.frame = CGRectMake(nameBtn.frame.origin.x+nameBtn.frame.size.width+5, 20, 200, 30);
+         
+         likedLbl.frame = CGRectMake(nameBtn.frame.origin.x+nameBtn.frame.size.width+5, 20, self.view.frame.size.width-nameBtn.frame.origin.x-nameBtn.frame.size.width-5-120, 40);
+         likedLbl.backgroundColor=[UIColor clearColor];
+         [likedLbl setTitle:@"Repost your post." forState:UIControlStateNormal];
+         [likedLbl setTintColor:[UIColor blackColor]];
+         likedLbl.tag=indexPath.section;
+         likedLbl.userInteractionEnabled=false;
+         likedLbl.titleLabel.font=[UIFont fontWithName:@"Helvetica" size:fonti];
+         [likedLbl sizeToFit];
+         [cell addSubview:likedLbl];
+         
+         AsyncImageView *postImage=[[AsyncImageView alloc]initWithFrame:CGRectMake(self.view.frame.size.width-85, 10, 80, 80)];
+         postImage.userInteractionEnabled=YES;
+         NSString *url22;
+         url22=[NSString stringWithFormat:@"http://naamee.com/api/webservices/images/%@", [dic valueForKey:@"postImage"]];
+         postImage.imageURL=[NSURL URLWithString:url22];
+         postImage.contentMode=UIViewContentModeScaleAspectFill;
+         postImage.clipsToBounds = true;
+         postImage.tag=indexPath.section;
+         [cell addSubview:postImage];
+         postImage.userInteractionEnabled=YES;
+         UITapGestureRecognizer *gesture=[[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(openPost:)];
+         gesture.numberOfTapsRequired=1;
+         [postImage addGestureRecognizer:gesture];
+         
+     }
     if([[dic valueForKey:@"notificationtype"]isEqualToString:@"comment"])
     {
         AsyncImageView *userImage=[[AsyncImageView alloc]initWithFrame:CGRectMake(5, 10, 80, 80)];
@@ -276,7 +383,7 @@
         UIButton *nameBtn = [UIButton buttonWithType:UIButtonTypeRoundedRect];
         nameBtn.frame = CGRectMake(90, 20, 200, 30);
         nameBtn.backgroundColor=[UIColor clearColor];
-        nameBtn.titleLabel.font=[UIFont fontWithName:@"Helvetica Neue Medium" size:12];
+        nameBtn.titleLabel.font=[UIFont fontWithName:@"Helvetica-Bold" size:fonti];
         [nameBtn setTitle:[dic valueForKey:@"userName"] forState:UIControlStateNormal];
         [nameBtn setTintColor:[UIColor blackColor]];
         nameBtn.tag=indexPath.section;
@@ -285,9 +392,10 @@
         [cell addSubview:nameBtn];
         
         UIButton *commentLbl = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-        commentLbl.frame = CGRectMake(nameBtn.frame.origin.x+nameBtn.frame.size.width+5, 23, 200, 30);
+        
+        commentLbl.frame = CGRectMake(nameBtn.frame.origin.x+nameBtn.frame.size.width+5, 20, self.view.frame.size.width-nameBtn.frame.origin.x-nameBtn.frame.size.width-5-120, 40);
         commentLbl.backgroundColor=[UIColor clearColor];
-        commentLbl.titleLabel.font=[UIFont fontWithName:@"Helvetica Neue" size:13];
+        commentLbl.titleLabel.font=[UIFont fontWithName:@"Helvetica" size:fonti];
         [commentLbl setTitle:@"comment on your post." forState:UIControlStateNormal];
         [commentLbl setTintColor:[UIColor blackColor]];
         commentLbl.tag=indexPath.section;
@@ -311,9 +419,296 @@
 
         
     }
+     if([[dic valueForKey:@"notificationtype"]isEqualToString:@"following"])
+             {
+                 AsyncImageView *userImage=[[AsyncImageView alloc]initWithFrame:CGRectMake(5, 10, 80, 80)];
+                 userImage.userInteractionEnabled=YES;
+                 NSString *url;
+                 url=[NSString stringWithFormat:@"http://naamee.com/api/webservices/images/%@", [dic valueForKey:@"userImage"]];
+                 userImage.imageURL=[NSURL URLWithString:url];
+                 userImage.contentMode=UIViewContentModeScaleAspectFill;
+                 userImage.clipsToBounds = true;
+                 userImage.layer.cornerRadius=40;
+                 [cell addSubview:userImage];
+                 
+                 UIButton *nameBtn = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+                 nameBtn.frame = CGRectMake(90, 20, 200, 30);
+                 nameBtn.backgroundColor=[UIColor clearColor];
+                 nameBtn.titleLabel.font=[UIFont fontWithName:@"Helvetica-Bold" size:fonti];
+                 [nameBtn setTitle:[dic valueForKey:@"userName"] forState:UIControlStateNormal];
+                 [nameBtn setTintColor:[UIColor blackColor]];
+                 nameBtn.tag=indexPath.section;
+                 [nameBtn sizeToFit];
+                 [nameBtn addTarget:self action:@selector(profileAction:) forControlEvents:UIControlEventTouchUpInside];
+                 [cell addSubview:nameBtn];
+                 
+                 UIButton *commentLbl = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+                 commentLbl.frame = CGRectMake(nameBtn.frame.origin.x+nameBtn.frame.size.width+5, 20, 200, 30);
+                 commentLbl.backgroundColor=[UIColor clearColor];
+                 commentLbl.titleLabel.font=[UIFont fontWithName:@"Helvetica" size:fonti];
+                 [commentLbl setTitle:@"start following" forState:UIControlStateNormal];
+                 [commentLbl setTintColor:[UIColor blackColor]];
+                 commentLbl.tag=indexPath.section;
+                 [commentLbl sizeToFit];
+                 commentLbl.userInteractionEnabled=false;
+                 [cell addSubview:commentLbl];
+                 
+                 UIButton *nameotherBtn = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+                 nameotherBtn.frame = CGRectMake(90, 50, 200, 30);
+                 nameotherBtn.backgroundColor=[UIColor clearColor];
+                 nameotherBtn.titleLabel.font=[UIFont fontWithName:@"Helvetica-Bold" size:fonti];
+                 [nameotherBtn setTitle:[dic valueForKey:@"otheruserName"] forState:UIControlStateNormal];
+                 [nameotherBtn setTintColor:[UIColor blackColor]];
+                 nameotherBtn.tag=indexPath.section;
+                 [nameotherBtn sizeToFit];
+                 [nameotherBtn addTarget:self action:@selector(profileotherAction:) forControlEvents:UIControlEventTouchUpInside];
+                 [cell addSubview:nameotherBtn];
+                 
+     //            UIButton *commentLbl1 = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+     //            commentLbl1.frame = CGRectMake(nameotherBtn.frame.origin.x+nameotherBtn.frame.size.width+5, 51, 200, 30);
+     //            commentLbl1.backgroundColor=[UIColor clearColor];
+     //            commentLbl1.titleLabel.font=[UIFont fontWithName:@"Helvetica Neue" size:14];
+     //            [commentLbl1 setTitle:@"post." forState:UIControlStateNormal];
+     //            [commentLbl1 setTintColor:[UIColor blackColor]];
+     //            commentLbl1.tag=indexPath.section;
+     //            [commentLbl1 sizeToFit];
+     //            commentLbl1.userInteractionEnabled=false;
+     //            [cell addSubview:commentLbl1];
+                 
+                 AsyncImageView *postImage=[[AsyncImageView alloc]initWithFrame:CGRectMake(self.view.frame.size.width-85, 10, 80, 80)];
+                 postImage.userInteractionEnabled=YES;
+                 NSString *url22;
+                 url22=[NSString stringWithFormat:@"http://naamee.com/api/webservices/images/%@", [dic valueForKey:@"otheruserImage"]];
+                 postImage.imageURL=[NSURL URLWithString:url22];
+                 postImage.contentMode=UIViewContentModeScaleAspectFill;
+                 postImage.clipsToBounds = true;
+                 postImage.tag=indexPath.section;
+                 [cell addSubview:postImage];
+                 postImage.userInteractionEnabled=YES;
+                 UITapGestureRecognizer *gesture=[[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(openPost:)];
+                 gesture.numberOfTapsRequired=1;
+                 [postImage addGestureRecognizer:gesture];
+                 
+                 
+             }
+     if([[dic valueForKey:@"notificationtype"]isEqualToString:@"mention"])
+             {
+                 AsyncImageView *userImage=[[AsyncImageView alloc]initWithFrame:CGRectMake(5, 10, 80, 80)];
+                 userImage.userInteractionEnabled=YES;
+                 NSString *url;
+                 url=[NSString stringWithFormat:@"http://naamee.com/api/webservices/images/%@", [dic valueForKey:@"userImage"]];
+                 userImage.imageURL=[NSURL URLWithString:url];
+                 userImage.contentMode=UIViewContentModeScaleAspectFill;
+                 userImage.layer.cornerRadius=40;
+                 userImage.clipsToBounds = true;
+                 [cell addSubview:userImage];
+                 
+                 UIButton *nameBtn = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+                 nameBtn.frame = CGRectMake(90, 20, 200, 30);
+                 nameBtn.backgroundColor=[UIColor clearColor];
+                 [nameBtn setTitle:[dic valueForKey:@"userName"] forState:UIControlStateNormal];
+                 [nameBtn setTintColor:[UIColor blackColor]];
+                 nameBtn.tag=indexPath.section;
+                 [nameBtn addTarget:self action:@selector(profileAction:) forControlEvents:UIControlEventTouchUpInside];
+                 nameBtn.titleLabel.font=[UIFont fontWithName:@"Helvetica-Bold" size:fonti];
+                 [nameBtn sizeToFit];
+                 [cell addSubview:nameBtn];
+                 
+                 UIButton *likedLbl = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+                 likedLbl.frame = CGRectMake(nameBtn.frame.origin.x+nameBtn.frame.size.width+5, 20, self.view.frame.size.width-nameBtn.frame.origin.x-nameBtn.frame.size.width-5-120, 40);
+                 likedLbl.backgroundColor=[UIColor clearColor];
+                 [likedLbl setTitle:@"mention you in comment" forState:UIControlStateNormal];
+                 [likedLbl setTintColor:[UIColor blackColor]];
+                 likedLbl.tag=indexPath.section;
+                 likedLbl.userInteractionEnabled=false;
+                 likedLbl.titleLabel.font=[UIFont fontWithName:@"Helvetica" size:fonti];
+                 [likedLbl sizeToFit];
+                 [cell addSubview:likedLbl];
+                 
+     //            UIButton *nameotherBtn = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+     //            nameotherBtn.frame = CGRectMake(likedLbl.frame.origin.x+likedLbl.frame.size.width+5, 20, 200, 30);
+     //            nameotherBtn.backgroundColor=[UIColor clearColor];
+     //            [nameotherBtn setTitle:[dic valueForKey:@"otheruserName"] forState:UIControlStateNormal];
+     //            [nameotherBtn setTintColor:[UIColor blackColor]];
+     //            nameotherBtn.tag=indexPath.section;
+     //            [nameotherBtn addTarget:self action:@selector(profileotherAction:) forControlEvents:UIControlEventTouchUpInside];
+     //            nameotherBtn.titleLabel.font=[UIFont fontWithName:@"Helvetica-Bold" size:15];
+     //            [nameotherBtn sizeToFit];
+     //            [cell addSubview:nameotherBtn];
+     //
+     //            UIButton *likedLbl1 = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+     //            likedLbl1.frame = CGRectMake(nameotherBtn.frame.origin.x+nameotherBtn.frame.size.width+5, 20, 200, 30);
+     //            likedLbl1.backgroundColor=[UIColor clearColor];
+     //            [likedLbl1 setTitle:@"post." forState:UIControlStateNormal];
+     //            [likedLbl1 setTintColor:[UIColor blackColor]];
+     //            likedLbl1.tag=indexPath.section;
+     //            likedLbl1.userInteractionEnabled=false;
+     //            likedLbl1.titleLabel.font=[UIFont fontWithName:@"Helvetica" size:15];
+     //            [likedLbl1 sizeToFit];
+     //            [cell addSubview:likedLbl1];
+     //
+                 AsyncImageView *postImage=[[AsyncImageView alloc]initWithFrame:CGRectMake(self.view.frame.size.width-85, 10, 80, 80)];
+                 postImage.userInteractionEnabled=YES;
+                 NSString *url22;
+                 url22=[NSString stringWithFormat:@"http://naamee.com/api/webservices/images/%@", [dic valueForKey:@"postImage"]];
+                 postImage.imageURL=[NSURL URLWithString:url22];
+                 postImage.contentMode=UIViewContentModeScaleAspectFill;
+                 postImage.clipsToBounds = true;
+                 postImage.tag=indexPath.section;
+                 [cell addSubview:postImage];
+                 postImage.userInteractionEnabled=YES;
+                 UITapGestureRecognizer *gesture=[[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(openPost:)];
+                 gesture.numberOfTapsRequired=1;
+                 [postImage addGestureRecognizer:gesture];
+                 
+             }
  }
     else
     {
+        if([[dic valueForKey:@"notificationtype"]isEqualToString:@"repost"])
+        {
+            AsyncImageView *userImage=[[AsyncImageView alloc]initWithFrame:CGRectMake(5, 10, 80, 80)];
+            userImage.userInteractionEnabled=YES;
+            NSString *url;
+            url=[NSString stringWithFormat:@"http://naamee.com/api/webservices/images/%@", [dic valueForKey:@"userImage"]];
+            userImage.imageURL=[NSURL URLWithString:url];
+            userImage.contentMode=UIViewContentModeScaleAspectFill;
+            userImage.layer.cornerRadius=40;
+            userImage.clipsToBounds = true;
+            [cell addSubview:userImage];
+            
+            UIButton *nameBtn = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+            nameBtn.frame = CGRectMake(90, 20, 200, 30);
+            nameBtn.backgroundColor=[UIColor clearColor];
+            [nameBtn setTitle:[dic valueForKey:@"userName"] forState:UIControlStateNormal];
+            [nameBtn setTintColor:[UIColor blackColor]];
+            nameBtn.tag=indexPath.section;
+            [nameBtn addTarget:self action:@selector(profileAction:) forControlEvents:UIControlEventTouchUpInside];
+            nameBtn.titleLabel.font=[UIFont fontWithName:@"Helvetica-Bold" size:fonti];
+            [nameBtn sizeToFit];
+            [cell addSubview:nameBtn];
+            
+            UIButton *likedLbl = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+            likedLbl.frame = CGRectMake(nameBtn.frame.origin.x+nameBtn.frame.size.width+5, 20, 200, 30);
+            likedLbl.backgroundColor=[UIColor clearColor];
+            [likedLbl setTitle:@"Repost " forState:UIControlStateNormal];
+            [likedLbl setTintColor:[UIColor blackColor]];
+            likedLbl.tag=indexPath.section;
+            likedLbl.userInteractionEnabled=false;
+            likedLbl.titleLabel.font=[UIFont fontWithName:@"Helvetica" size:fonti];
+            [likedLbl sizeToFit];
+            [cell addSubview:likedLbl];
+            
+            UIButton *nameotherBtn = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+            nameotherBtn.frame = CGRectMake(likedLbl.frame.origin.x+likedLbl.frame.size.width+5, 20, 200, 30);
+            nameotherBtn.backgroundColor=[UIColor clearColor];
+            [nameotherBtn setTitle:[dic valueForKey:@"otheruserName"] forState:UIControlStateNormal];
+            [nameotherBtn setTintColor:[UIColor blackColor]];
+            nameotherBtn.tag=indexPath.section;
+            [nameotherBtn addTarget:self action:@selector(profileotherAction:) forControlEvents:UIControlEventTouchUpInside];
+            nameotherBtn.titleLabel.font=[UIFont fontWithName:@"Helvetica-Bold" size:fonti];
+            [nameotherBtn sizeToFit];
+            [cell addSubview:nameotherBtn];
+            
+            UIButton *likedLbl1 = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+            likedLbl1.frame = CGRectMake(nameotherBtn.frame.origin.x+nameotherBtn.frame.size.width+5, 20, 200, 30);
+            likedLbl1.backgroundColor=[UIColor clearColor];
+            [likedLbl1 setTitle:@"post." forState:UIControlStateNormal];
+            [likedLbl1 setTintColor:[UIColor blackColor]];
+            likedLbl1.tag=indexPath.section;
+            likedLbl1.userInteractionEnabled=false;
+            likedLbl1.titleLabel.font=[UIFont fontWithName:@"Helvetica" size:fonti];
+            [likedLbl1 sizeToFit];
+            [cell addSubview:likedLbl1];
+            
+            AsyncImageView *postImage=[[AsyncImageView alloc]initWithFrame:CGRectMake(self.view.frame.size.width-85, 10, 80, 80)];
+            postImage.userInteractionEnabled=YES;
+            NSString *url22;
+            url22=[NSString stringWithFormat:@"http://naamee.com/api/webservices/images/%@", [dic valueForKey:@"postImage"]];
+            postImage.imageURL=[NSURL URLWithString:url22];
+            postImage.contentMode=UIViewContentModeScaleAspectFill;
+            postImage.clipsToBounds = true;
+            postImage.tag=indexPath.section;
+            [cell addSubview:postImage];
+            postImage.userInteractionEnabled=YES;
+            UITapGestureRecognizer *gesture=[[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(openPost:)];
+            gesture.numberOfTapsRequired=1;
+            [postImage addGestureRecognizer:gesture];
+            
+        }
+        
+        if([[dic valueForKey:@"notificationtype"]isEqualToString:@"mention"])
+        {
+            AsyncImageView *userImage=[[AsyncImageView alloc]initWithFrame:CGRectMake(5, 10, 80, 80)];
+            userImage.userInteractionEnabled=YES;
+            NSString *url;
+            url=[NSString stringWithFormat:@"http://naamee.com/api/webservices/images/%@", [dic valueForKey:@"userImage"]];
+            userImage.imageURL=[NSURL URLWithString:url];
+            userImage.contentMode=UIViewContentModeScaleAspectFill;
+            userImage.layer.cornerRadius=40;
+            userImage.clipsToBounds = true;
+            [cell addSubview:userImage];
+            
+            UIButton *nameBtn = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+            nameBtn.frame = CGRectMake(90, 20, 200, 30);
+            nameBtn.backgroundColor=[UIColor clearColor];
+            [nameBtn setTitle:[dic valueForKey:@"userName"] forState:UIControlStateNormal];
+            [nameBtn setTintColor:[UIColor blackColor]];
+            nameBtn.tag=indexPath.section;
+            [nameBtn addTarget:self action:@selector(profileAction:) forControlEvents:UIControlEventTouchUpInside];
+            nameBtn.titleLabel.font=[UIFont fontWithName:@"Helvetica-Bold" size:fonti];
+            [nameBtn sizeToFit];
+            [cell addSubview:nameBtn];
+            
+            UIButton *likedLbl = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+//            likedLbl.frame = CGRectMake(nameBtn.frame.origin.x+nameBtn.frame.size.width+5, 20, 200, 30);
+            likedLbl.frame = CGRectMake(nameBtn.frame.origin.x+nameBtn.frame.size.width+5, 20, self.view.frame.size.width-nameBtn.frame.origin.x-nameBtn.frame.size.width-5-120, 40);
+            likedLbl.backgroundColor=[UIColor clearColor];
+            [likedLbl setTitle:@"mention you in comment" forState:UIControlStateNormal];
+            [likedLbl setTintColor:[UIColor blackColor]];
+            likedLbl.tag=indexPath.section;
+            likedLbl.userInteractionEnabled=false;
+            likedLbl.titleLabel.font=[UIFont fontWithName:@"Helvetica" size:fonti];
+            [likedLbl sizeToFit];
+            [cell addSubview:likedLbl];
+            
+//            UIButton *nameotherBtn = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+//            nameotherBtn.frame = CGRectMake(likedLbl.frame.origin.x+likedLbl.frame.size.width+5, 20, 200, 30);
+//            nameotherBtn.backgroundColor=[UIColor clearColor];
+//            [nameotherBtn setTitle:[dic valueForKey:@"otheruserName"] forState:UIControlStateNormal];
+//            [nameotherBtn setTintColor:[UIColor blackColor]];
+//            nameotherBtn.tag=indexPath.section;
+//            [nameotherBtn addTarget:self action:@selector(profileotherAction:) forControlEvents:UIControlEventTouchUpInside];
+//            nameotherBtn.titleLabel.font=[UIFont fontWithName:@"Helvetica-Bold" size:15];
+//            [nameotherBtn sizeToFit];
+//            [cell addSubview:nameotherBtn];
+//
+//            UIButton *likedLbl1 = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+//            likedLbl1.frame = CGRectMake(nameotherBtn.frame.origin.x+nameotherBtn.frame.size.width+5, 20, 200, 30);
+//            likedLbl1.backgroundColor=[UIColor clearColor];
+//            [likedLbl1 setTitle:@"post." forState:UIControlStateNormal];
+//            [likedLbl1 setTintColor:[UIColor blackColor]];
+//            likedLbl1.tag=indexPath.section;
+//            likedLbl1.userInteractionEnabled=false;
+//            likedLbl1.titleLabel.font=[UIFont fontWithName:@"Helvetica" size:15];
+//            [likedLbl1 sizeToFit];
+//            [cell addSubview:likedLbl1];
+//
+            AsyncImageView *postImage=[[AsyncImageView alloc]initWithFrame:CGRectMake(self.view.frame.size.width-85, 10, 80, 80)];
+            postImage.userInteractionEnabled=YES;
+            NSString *url22;
+            url22=[NSString stringWithFormat:@"http://naamee.com/api/webservices/images/%@", [dic valueForKey:@"postImage"]];
+            postImage.imageURL=[NSURL URLWithString:url22];
+            postImage.contentMode=UIViewContentModeScaleAspectFill;
+            postImage.clipsToBounds = true;
+            postImage.tag=indexPath.section;
+            [cell addSubview:postImage];
+            postImage.userInteractionEnabled=YES;
+            UITapGestureRecognizer *gesture=[[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(openPost:)];
+            gesture.numberOfTapsRequired=1;
+            [postImage addGestureRecognizer:gesture];
+            
+        }
         if([[dic valueForKey:@"notificationtype"]isEqualToString:@"like"])
         {
             AsyncImageView *userImage=[[AsyncImageView alloc]initWithFrame:CGRectMake(5, 10, 80, 80)];
@@ -333,18 +728,18 @@
             [nameBtn setTintColor:[UIColor blackColor]];
             nameBtn.tag=indexPath.section;
             [nameBtn addTarget:self action:@selector(profileAction:) forControlEvents:UIControlEventTouchUpInside];
-            nameBtn.titleLabel.font=[UIFont fontWithName:@"Helvetica Neue Medium" size:13];
+            nameBtn.titleLabel.font=[UIFont fontWithName:@"Helvetica-Bold" size:fonti];
             [nameBtn sizeToFit];
             [cell addSubview:nameBtn];
             
             UIButton *likedLbl = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-            likedLbl.frame = CGRectMake(nameBtn.frame.origin.x+nameBtn.frame.size.width+5, 23, 200, 30);
+            likedLbl.frame = CGRectMake(nameBtn.frame.origin.x+nameBtn.frame.size.width+5, 20, 200, 30);
             likedLbl.backgroundColor=[UIColor clearColor];
             [likedLbl setTitle:@"liked" forState:UIControlStateNormal];
             [likedLbl setTintColor:[UIColor blackColor]];
             likedLbl.tag=indexPath.section;
             likedLbl.userInteractionEnabled=false;
-            likedLbl.titleLabel.font=[UIFont fontWithName:@"Helvetica Neue" size:12];
+            likedLbl.titleLabel.font=[UIFont fontWithName:@"Helvetica" size:fonti];
             [likedLbl sizeToFit];
             [cell addSubview:likedLbl];
             
@@ -355,18 +750,18 @@
             [nameotherBtn setTintColor:[UIColor blackColor]];
             nameotherBtn.tag=indexPath.section;
             [nameotherBtn addTarget:self action:@selector(profileotherAction:) forControlEvents:UIControlEventTouchUpInside];
-            nameotherBtn.titleLabel.font=[UIFont fontWithName:@"Helvetica Neue Medium" size:13];
+            nameotherBtn.titleLabel.font=[UIFont fontWithName:@"Helvetica-Bold" size:fonti];
             [nameotherBtn sizeToFit];
             [cell addSubview:nameotherBtn];
             
             UIButton *likedLbl1 = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-            likedLbl1.frame = CGRectMake(nameotherBtn.frame.origin.x+nameotherBtn.frame.size.width+5, 23, 200, 30);
+            likedLbl1.frame = CGRectMake(nameotherBtn.frame.origin.x+nameotherBtn.frame.size.width+5, 20, 200, 30);
             likedLbl1.backgroundColor=[UIColor clearColor];
             [likedLbl1 setTitle:@"post." forState:UIControlStateNormal];
             [likedLbl1 setTintColor:[UIColor blackColor]];
             likedLbl1.tag=indexPath.section;
             likedLbl1.userInteractionEnabled=false;
-            likedLbl1.titleLabel.font=[UIFont fontWithName:@"Helvetica Neue" size:12];
+            likedLbl1.titleLabel.font=[UIFont fontWithName:@"Helvetica" size:fonti];
             [likedLbl1 sizeToFit];
             [cell addSubview:likedLbl1];
             
@@ -400,7 +795,7 @@
             UIButton *nameBtn = [UIButton buttonWithType:UIButtonTypeRoundedRect];
             nameBtn.frame = CGRectMake(90, 20, 200, 30);
             nameBtn.backgroundColor=[UIColor clearColor];
-            nameBtn.titleLabel.font=[UIFont fontWithName:@"Helvetica Neue Medium" size:12];
+            nameBtn.titleLabel.font=[UIFont fontWithName:@"Helvetica-Bold" size:fonti];
             [nameBtn setTitle:[dic valueForKey:@"userName"] forState:UIControlStateNormal];
             [nameBtn setTintColor:[UIColor blackColor]];
             nameBtn.tag=indexPath.section;
@@ -409,9 +804,9 @@
             [cell addSubview:nameBtn];
             
             UIButton *commentLbl = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-            commentLbl.frame = CGRectMake(nameBtn.frame.origin.x+nameBtn.frame.size.width+5, 23, 200, 30);
+            commentLbl.frame = CGRectMake(nameBtn.frame.origin.x+nameBtn.frame.size.width+5, 20, 200, 30);
             commentLbl.backgroundColor=[UIColor clearColor];
-            commentLbl.titleLabel.font=[UIFont fontWithName:@"Helvetica Neue" size:14];
+            commentLbl.titleLabel.font=[UIFont fontWithName:@"Helvetica" size:fonti];
             [commentLbl setTitle:@"comment on" forState:UIControlStateNormal];
             [commentLbl setTintColor:[UIColor blackColor]];
             commentLbl.tag=indexPath.section;
@@ -422,7 +817,7 @@
             UIButton *nameotherBtn = [UIButton buttonWithType:UIButtonTypeRoundedRect];
             nameotherBtn.frame = CGRectMake(90, 50, 200, 30);
             nameotherBtn.backgroundColor=[UIColor clearColor];
-            nameotherBtn.titleLabel.font=[UIFont fontWithName:@"Helvetica Neue Medium" size:12];
+            nameotherBtn.titleLabel.font=[UIFont fontWithName:@"Helvetica-Bold" size:fonti];
             [nameotherBtn setTitle:[dic valueForKey:@"otheruserName"] forState:UIControlStateNormal];
             [nameotherBtn setTintColor:[UIColor blackColor]];
             nameotherBtn.tag=indexPath.section;
@@ -431,9 +826,9 @@
             [cell addSubview:nameotherBtn];
             
             UIButton *commentLbl1 = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-            commentLbl1.frame = CGRectMake(nameotherBtn.frame.origin.x+nameotherBtn.frame.size.width+5, 51, 200, 30);
+            commentLbl1.frame = CGRectMake(nameotherBtn.frame.origin.x+nameotherBtn.frame.size.width+5, 50, 200, 30);
             commentLbl1.backgroundColor=[UIColor clearColor];
-            commentLbl1.titleLabel.font=[UIFont fontWithName:@"Helvetica Neue" size:14];
+            commentLbl1.titleLabel.font=[UIFont fontWithName:@"Helvetica" size:fonti];
             [commentLbl1 setTitle:@"post." forState:UIControlStateNormal];
             [commentLbl1 setTintColor:[UIColor blackColor]];
             commentLbl1.tag=indexPath.section;
@@ -472,7 +867,7 @@
             UIButton *nameBtn = [UIButton buttonWithType:UIButtonTypeRoundedRect];
             nameBtn.frame = CGRectMake(90, 20, 200, 30);
             nameBtn.backgroundColor=[UIColor clearColor];
-            nameBtn.titleLabel.font=[UIFont fontWithName:@"Helvetica Neue Medium" size:12];
+            nameBtn.titleLabel.font=[UIFont fontWithName:@"Helvetica-Bold" size:fonti];
             [nameBtn setTitle:[dic valueForKey:@"userName"] forState:UIControlStateNormal];
             [nameBtn setTintColor:[UIColor blackColor]];
             nameBtn.tag=indexPath.section;
@@ -483,7 +878,7 @@
             UIButton *commentLbl = [UIButton buttonWithType:UIButtonTypeRoundedRect];
             commentLbl.frame = CGRectMake(nameBtn.frame.origin.x+nameBtn.frame.size.width+5, 20, 200, 30);
             commentLbl.backgroundColor=[UIColor clearColor];
-            commentLbl.titleLabel.font=[UIFont fontWithName:@"Helvetica Neue" size:15];
+            commentLbl.titleLabel.font=[UIFont fontWithName:@"Helvetica" size:fonti];
             [commentLbl setTitle:@"start following" forState:UIControlStateNormal];
             [commentLbl setTintColor:[UIColor blackColor]];
             commentLbl.tag=indexPath.section;
@@ -494,7 +889,7 @@
             UIButton *nameotherBtn = [UIButton buttonWithType:UIButtonTypeRoundedRect];
             nameotherBtn.frame = CGRectMake(90, 50, 200, 30);
             nameotherBtn.backgroundColor=[UIColor clearColor];
-            nameotherBtn.titleLabel.font=[UIFont fontWithName:@"Helvetica Neue Medium" size:12];
+            nameotherBtn.titleLabel.font=[UIFont fontWithName:@"Helvetica-Bold" size:fonti];
             [nameotherBtn setTitle:[dic valueForKey:@"otheruserName"] forState:UIControlStateNormal];
             [nameotherBtn setTintColor:[UIColor blackColor]];
             nameotherBtn.tag=indexPath.section;
@@ -563,7 +958,14 @@
 }
 -(void)profileAction:(UIButton*)btn
 {
-    NSDictionary *dic=[notificationArr objectAtIndex:btn.tag];
+    
+    NSDictionary *dic;
+    if(selectedTab==0)
+    dic=[notificationArr objectAtIndex:btn.tag];
+    else
+        dic=[younotificationArr objectAtIndex:btn.tag];
+    
+    
     [self markRead:[dic valueForKey:@"notificationid"]];
 
     if([[dic valueForKey:@"user_id"]isEqualToString:[[NSUserDefaults standardUserDefaults]valueForKey:@"userid"]])
@@ -582,8 +984,12 @@
 }
 -(void)profileotherAction:(UIButton*)btn
 {
-    NSDictionary *dic=[notificationArr objectAtIndex:btn.tag];
-    [self markRead:[dic valueForKey:@"notificationid"]];
+    NSDictionary *dic;
+       if(selectedTab==0)
+       dic=[notificationArr objectAtIndex:btn.tag];
+       else
+           dic=[younotificationArr objectAtIndex:btn.tag];
+           [self markRead:[dic valueForKey:@"notificationid"]];
     
     if([[dic valueForKey:@"otheruserid"]isEqualToString:[[NSUserDefaults standardUserDefaults]valueForKey:@"userid"]])
     {
@@ -604,8 +1010,12 @@
 {
     AsyncImageView *postImage=(AsyncImageView *)[gesture view];
     selectedIndex=(int)postImage.tag;
-    NSDictionary *dic=[notificationArr objectAtIndex:selectedIndex];
-
+    NSDictionary *dic;
+       if(selectedTab==0)
+       dic=[notificationArr objectAtIndex:selectedIndex];
+       else
+           dic=[younotificationArr objectAtIndex:selectedIndex];
+       
     [self markRead:[dic valueForKey:@"notificationid"]];
     [[NSUserDefaults standardUserDefaults]setValue:[dic objectForKey:@"postid"] forKey:@"postid"];
     [[NSUserDefaults standardUserDefaults]setBool:YES forKey:@"isFromProfile"];

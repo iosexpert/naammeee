@@ -13,6 +13,7 @@
 #import "UIImage+ResizeMagick.h"
 #import "TOCropViewController.h"
 #import "CLImageEditor.h"
+#import <RSKImageCropper/RSKImageCropper.h>
 
 @interface FiltersViewController ()<TOCropViewControllerDelegate>
 {
@@ -27,15 +28,15 @@
 {
     self.navigationController.navigationBarHidden=YES;
     [self.tabBarController.tabBar setHidden:true];
-
+    
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-        [self.tabBarController.tabBar setHidden:true];
-
+    [self.tabBarController.tabBar setHidden:true];
+    
     UIView *upperView=[[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 60)];
     upperView.backgroundColor=[UIColor blackColor];
     [self.view addSubview:upperView];
@@ -76,12 +77,12 @@
                                      orientation:UIImageOrientationUpMirrored];
         imagePreview.image=flippedImage;
         capturedImage=flippedImage;
-
+        
     }
     else
     {
-    imagePreview.image=image;
-    capturedImage=image;
+        imagePreview.image=image;
+        capturedImage=image;
     }
     
     thumbnailImage = [capturedImage resizedImageByMagick:@"180x180#"];
@@ -93,71 +94,71 @@
     [self.view addSubview:imagePreview];
     
     
-        UICollectionViewFlowLayout *layout=[[UICollectionViewFlowLayout alloc] init];
-        [layout setScrollDirection:UICollectionViewScrollDirectionHorizontal];
+    UICollectionViewFlowLayout *layout=[[UICollectionViewFlowLayout alloc] init];
+    [layout setScrollDirection:UICollectionViewScrollDirectionHorizontal];
     
-        shortScrollView=[[UICollectionView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 120) collectionViewLayout:layout];
-        layout.minimumInteritemSpacing = 5;
-        layout.minimumLineSpacing = 5;
-        shortScrollView.tag=99000;
-        [shortScrollView setCollectionViewLayout:layout];
-        [shortScrollView setDataSource:self];
-        [shortScrollView setDelegate:self];
-        shortScrollView.pagingEnabled=false;
+    shortScrollView=[[UICollectionView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 120) collectionViewLayout:layout];
+    layout.minimumInteritemSpacing = 5;
+    layout.minimumLineSpacing = 5;
+    shortScrollView.tag=99000;
+    [shortScrollView setCollectionViewLayout:layout];
+    [shortScrollView setDataSource:self];
+    [shortScrollView setDelegate:self];
+    shortScrollView.pagingEnabled=false;
     [shortScrollView registerNib:[UINib nibWithNibName:@"FilterCollectionViewCell" bundle:nil] forCellWithReuseIdentifier:@"FilterCollectionViewCell"];
-
-    
-        [shortScrollView setBackgroundColor:[UIColor clearColor]];
-        shortScrollView.showsVerticalScrollIndicator=false;
-        shortScrollView.showsHorizontalScrollIndicator=false;
-        [downView addSubview:shortScrollView];
     
     
-//    if ([self respondsToSelector:@selector(edgesForExtendedLayout)])
-//        self.edgesForExtendedLayout = UIRectEdgeNone;
-//
-//    CGFloat width=capturedImage.size.width;
-//    CGFloat height=capturedImage.size.height;
-//
-//    CGFloat imageHeight;
-//    float resolution;
-//    if (width>height)
-//    {
-//        resolution=height/width;
-//        imageHeight=self.view.frame.size.width*resolution;
-//    }
-//    else
-//    {
-//        resolution=height/width;
-//        imageHeight=self.view.frame.size.width*resolution;
-//    }
-//
-//    CGFloat imageWidth=self.view.frame.size.width;
-//    if ((self.view.frame.size.height-(topview.frame.size.height+bottomView.frame.size.height))<imageHeight)
-//    {
-//        imageHeight=(self.view.frame.size.height-(topview.frame.size.height+bottomView.frame.size.height));
-//        imageWidth=(width/height)*imageHeight;
-//    }
-//
-//    imagePreview.frame=CGRectMake(self.view.frame.size.width/2-imageWidth/2, topview.frame.size.height+(imagePreview.frame.size.height/2-imageHeight/2), imageWidth, imageHeight);
-//
-//    imagePreview.image=capturedImage;
-//
-//    thumbnailImage = [capturedImage resizedImageByMagick:@"180x226#"];
-//    storedThumbnails = [[NSMutableDictionary alloc] init];
-//
-//    [self loadThumbnails];
-//
-//    if (capturedImage.size.width < self.view.frame.size.width*2)
-//    {
-//        self.imagePreview.contentMode = UIViewContentModeCenter;
-//    }
-//    else
-//    {
-//        self.imagePreview.contentMode = UIViewContentModeScaleAspectFit;
-//    }
+    [shortScrollView setBackgroundColor:[UIColor clearColor]];
+    shortScrollView.showsVerticalScrollIndicator=false;
+    shortScrollView.showsHorizontalScrollIndicator=false;
+    [downView addSubview:shortScrollView];
+    
+    
+    //    if ([self respondsToSelector:@selector(edgesForExtendedLayout)])
+    //        self.edgesForExtendedLayout = UIRectEdgeNone;
+    //
+    //    CGFloat width=capturedImage.size.width;
+    //    CGFloat height=capturedImage.size.height;
+    //
+    //    CGFloat imageHeight;
+    //    float resolution;
+    //    if (width>height)
+    //    {
+    //        resolution=height/width;
+    //        imageHeight=self.view.frame.size.width*resolution;
+    //    }
+    //    else
+    //    {
+    //        resolution=height/width;
+    //        imageHeight=self.view.frame.size.width*resolution;
+    //    }
+    //
+    //    CGFloat imageWidth=self.view.frame.size.width;
+    //    if ((self.view.frame.size.height-(topview.frame.size.height+bottomView.frame.size.height))<imageHeight)
+    //    {
+    //        imageHeight=(self.view.frame.size.height-(topview.frame.size.height+bottomView.frame.size.height));
+    //        imageWidth=(width/height)*imageHeight;
+    //    }
+    //
+    //    imagePreview.frame=CGRectMake(self.view.frame.size.width/2-imageWidth/2, topview.frame.size.height+(imagePreview.frame.size.height/2-imageHeight/2), imageWidth, imageHeight);
+    //
+    //    imagePreview.image=capturedImage;
+    //
+    //    thumbnailImage = [capturedImage resizedImageByMagick:@"180x226#"];
+    //    storedThumbnails = [[NSMutableDictionary alloc] init];
+    //
+    //    [self loadThumbnails];
+    //
+    //    if (capturedImage.size.width < self.view.frame.size.width*2)
+    //    {
+    //        self.imagePreview.contentMode = UIViewContentModeCenter;
+    //    }
+    //    else
+    //    {
+    //        self.imagePreview.contentMode = UIViewContentModeScaleAspectFit;
+    //    }
     self.imagePreview.contentMode = UIViewContentModeScaleAspectFit;
-
+    
     filtersArray = [[NSArray alloc] initWithObjects:@"Original",@"Egg",@"Andy",@"Guy",@"Cindy",@"Tim",@"Tommy",@"Mario",@"Wong",@"Linda",@"Bill",@"Nick",@"Juergen",@"Annie",@"Helmut",@"David",@"Hedi",@"Petra",@"Karl",@"Ellen",@"Z",@"Rt", nil];
     
     UIButton *cropButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
@@ -168,8 +169,8 @@
     [cropButton addTarget:self action:@selector(cropImage:) forControlEvents:UIControlEventTouchUpInside];
     [upperView addSubview:cropButton];
     
-//    UIBarButtonItem *cropPicture = [[UIBarButtonItem alloc] initWithTitle:@"Crop" style:UIBarButtonItemStylePlain target:self action:@selector(cropPicture)];
-//    self.navigationItem.rightBarButtonItem = cropPicture;
+    //    UIBarButtonItem *cropPicture = [[UIBarButtonItem alloc] initWithTitle:@"Crop" style:UIBarButtonItemStylePlain target:self action:@selector(cropPicture)];
+    //    self.navigationItem.rightBarButtonItem = cropPicture;
 }
 
 #pragma mark -- Button Action
@@ -190,9 +191,9 @@
     tool.available = NO;
     tool = [editor.toolInfo subToolInfoWithToolName:@"CLRotateTool" recursive:YES];
     tool.available = NO;
-        tool = [editor.toolInfo subToolInfoWithToolName:@"CLFilterTool" recursive:YES];
-        tool.available = NO;
-
+    tool = [editor.toolInfo subToolInfoWithToolName:@"CLFilterTool" recursive:YES];
+    tool.available = NO;
+    
     //    tool = [editor.toolInfo subToolInfoWithToolName:@"CLEffectTool" recursive:YES];
     //    tool.available = NO;
     tool = [editor.toolInfo subToolInfoWithToolName:@"CLDrawTool" recursive:YES];
@@ -213,22 +214,24 @@
     tool.available = NO;
     tool = [editor.toolInfo subToolInfoWithToolName:@"CLClippingTool" recursive:YES];
     tool.available=NO;
-
+    
     editor.delegate = self;
     
     [self presentViewController:editor animated:YES completion:nil];
-
     
-//    shareViewController *lvc=[[shareViewController alloc]init];
-//    [self.navigationController pushViewController:lvc animated:true];
+    
+    //    shareViewController *lvc=[[shareViewController alloc]init];
+    //    [self.navigationController pushViewController:lvc animated:true];
 }
 
 - (IBAction)cropImage:(id)sender
 {
+    
+    
     TOCropViewController *cropController = [[TOCropViewController alloc] initWithCroppingStyle:TOCropViewCroppingStyleDefault image:imagePreview.image];
     cropController.delegate = self;
-    cropController.aspectRatioPreset = TOCropViewControllerAspectRatioPresetSquare;
-    cropController.aspectRatioPickerButtonHidden = YES;
+    cropController.aspectRatioPreset = TOCropViewControllerAspectRatioPreset4x3;
+    cropController.aspectRatioPickerButtonHidden = false;
     CGRect viewFrame = [self.view convertRect:imagePreview.frame toView:self.navigationController.view];
     [cropController presentAnimatedFromParentViewController:self
                                                   fromImage:imagePreview.image
@@ -248,8 +251,8 @@
 }
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath
 {
-  
-            return CGSizeMake(100,120);
+    
+    return CGSizeMake(100,120);
     
 }
 
@@ -381,13 +384,13 @@
         }
             break;
             
-        case 19:
+        case 20:
         {
             [self convertOriginalImageToZImageThumbnail:thumbnailImage withCell:cell withIndexPath:indexPath];
         }
             break;
             
-        case 20:
+        case 19:
         {
             [self convertOriginalImageToEllenImageThumbnail:thumbnailImage withCell:cell withIndexPath:indexPath];
         }
@@ -760,7 +763,7 @@
                 if([[[NSUserDefaults standardUserDefaults]valueForKey:@"front"]isEqualToString:@"yes"])
                 {
                     self->imagePreview.image = temperatureFilter.imageFromCurrentFramebuffer;
-
+                    
                     UIImage *leftImage;
                     
                     leftImage = self->imagePreview.image;
@@ -888,7 +891,7 @@
                 }
                 else
                     self->imagePreview.image = satFilter.imageFromCurrentFramebuffer;
-
+                
             }
         });
     });
@@ -1416,7 +1419,7 @@
                 }
                 else
                     self->imagePreview.image = temperatureFilter.imageFromCurrentFramebuffer;
-               // imagePreview.image = temperatureFilter.imageFromCurrentFramebuffer;
+                // imagePreview.image = temperatureFilter.imageFromCurrentFramebuffer;
             }
         });
     });
@@ -1432,10 +1435,10 @@
         UIImage *newImage;
         
         CGColorSpaceRef colorSapce = CGColorSpaceCreateDeviceGray();
-        CGContextRef context = CGBitmapContextCreate(nil, originalImage.size.width * originalImage.scale, originalImage.size.height * originalImage.scale, 8, originalImage.size.width * originalImage.scale, colorSapce, kCGImageAlphaNone);
+        CGContextRef context = CGBitmapContextCreate(nil, capturedImage.size.width * capturedImage.scale, capturedImage.size.height * capturedImage.scale, 8, capturedImage.size.width * capturedImage.scale, colorSapce, kCGImageAlphaNone);
         CGContextSetInterpolationQuality(context, kCGInterpolationHigh);
         CGContextSetShouldAntialias(context, NO);
-        CGContextDrawImage(context, CGRectMake(0, 0, originalImage.size.width, originalImage.size.height), [originalImage CGImage]);
+        CGContextDrawImage(context, CGRectMake(0, 0, capturedImage.size.width, capturedImage.size.height), [capturedImage CGImage]);
         
         CGImageRef bwImage = CGBitmapContextCreateImage(context);
         CGContextRelease(context);
@@ -1444,14 +1447,14 @@
         UIImage *resultImage = [UIImage imageWithCGImage:bwImage];
         CGImageRelease(bwImage);
         
-        UIGraphicsBeginImageContextWithOptions(originalImage.size, NO, originalImage.scale);
-        [resultImage drawInRect:CGRectMake(0.0, 0.0, originalImage.size.width, originalImage.size.height)];
+        UIGraphicsBeginImageContextWithOptions(capturedImage.size, NO, capturedImage.scale);
+        [resultImage drawInRect:CGRectMake(0.0, 0.0, capturedImage.size.width, capturedImage.size.height)];
         newImage = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
         
         
         dispatch_sync(dispatch_get_main_queue(), ^{
-            if (selectedIndexPath.row == index)
+            if (self->selectedIndexPath.row == index)
             {
                 [self.indicator stopAnimating];
                 self.indicator.hidden = YES;
@@ -1499,8 +1502,8 @@
         
         
         GPUImageHighlightShadowFilter *highlightsTintFilter = [[GPUImageHighlightShadowFilter alloc] init];
-//        highlightsTintFilter.highlightTintColor = (GPUVector4) {1.00f, 0.09f, 0.96f, 1.0f};
-//        highlightsTintFilter.highlightTintIntensity = 0.159247;
+        //        highlightsTintFilter.highlightTintColor = (GPUVector4) {1.00f, 0.09f, 0.96f, 1.0f};
+        //        highlightsTintFilter.highlightTintIntensity = 0.159247;
         
         [gpuImage addTarget:saturationFilter];
         [saturationFilter addTarget:filter];
@@ -1657,7 +1660,7 @@
         contrastFilter.contrast = 1.000000;
         
         GPUImageSaturationFilter *saturationFilter = [[GPUImageSaturationFilter alloc] init];
-        saturationFilter.saturation = 1.000000;
+        saturationFilter.saturation = -1.000000;
         
         
         [gpuImage addTarget:exposureFilter];
@@ -1706,11 +1709,11 @@
         GPUImagePicture *gpuImage = [[GPUImagePicture alloc] initWithImage:self->capturedImage];
         
         GPUImageContrastFilter *contrastFilter = [[GPUImageContrastFilter alloc] init];
-        contrastFilter.contrast = 1.000000;
+        contrastFilter.contrast = 3.000000;
         
         GPUImageHighlightShadowFilter *highlightsTintFilter = [[GPUImageHighlightShadowFilter alloc] init];
-//        highlightsTintFilter.highlightTintColor = (GPUVector4) {1.00f, 0.39f, 0.15f, 1.0f};
-//        highlightsTintFilter.highlightTintIntensity = 0.256944;
+        //        highlightsTintFilter.highlightTintColor = (GPUVector4) {1.00f, 0.39f, 0.15f, 1.0f};
+        //        highlightsTintFilter.highlightTintIntensity = 0.256944;
         
         [gpuImage addTarget:contrastFilter];
         [contrastFilter addTarget:highlightsTintFilter];
@@ -2436,7 +2439,7 @@
             UIImage *newImage;
             
             CGColorSpaceRef colorSapce = CGColorSpaceCreateDeviceGray();
-            CGContextRef context = CGBitmapContextCreate(nil, self->capturedImage.size.width * capturedImage.scale, capturedImage.size.height * capturedImage.scale, 8, capturedImage.size.width * self->capturedImage.scale, colorSapce, kCGImageAlphaNone);
+            CGContextRef context = CGBitmapContextCreate(nil, self->capturedImage.size.width * self->capturedImage.scale, self->capturedImage.size.height * self->capturedImage.scale, 8, capturedImage.size.width * self->capturedImage.scale, colorSapce, kCGImageAlphaNone);
             CGContextSetInterpolationQuality(context, kCGInterpolationHigh);
             CGContextSetShouldAntialias(context, NO);
             CGContextDrawImage(context, CGRectMake(0, 0, self->capturedImage.size.width, self->capturedImage.size.height), [self->capturedImage CGImage]);
@@ -2489,8 +2492,8 @@
             temperatureFilter.tint = 6;
             
             GPUImageHighlightShadowFilter *highlightsTintFilter = [[GPUImageHighlightShadowFilter alloc] init];
-//            highlightsTintFilter.highlightTintColor = (GPUVector4) {1.00f, 0.09f, 0.96f, 1.0f};
-//            highlightsTintFilter.highlightTintIntensity = 0.159247;
+            //            highlightsTintFilter.highlightTintColor = (GPUVector4) {1.00f, 0.09f, 0.96f, 1.0f};
+            //            highlightsTintFilter.highlightTintIntensity = 0.159247;
             
             [gpuImage addTarget:saturationFilter];
             [saturationFilter addTarget:filter];
@@ -2612,7 +2615,7 @@
             contrastFilter.contrast = 1.000000;
             
             GPUImageSaturationFilter *saturationFilter = [[GPUImageSaturationFilter alloc] init];
-            saturationFilter.saturation = 1.000000;
+            saturationFilter.saturation = -1.000000;
             
             
             [gpuImage addTarget:exposureFilter];
@@ -2650,11 +2653,11 @@
             GPUImagePicture *gpuImage = [[GPUImagePicture alloc] initWithImage:originalImage];
             
             GPUImageContrastFilter *contrastFilter = [[GPUImageContrastFilter alloc] init];
-            contrastFilter.contrast = 1.000000;
+            contrastFilter.contrast = 3.000000;
             
             GPUImageHighlightShadowFilter *highlightsTintFilter = [[GPUImageHighlightShadowFilter alloc] init];
-//            highlightsTintFilter.highlightTintColor = (GPUVector4) {1.00f, 0.39f, 0.15f, 1.0f};
-//            highlightsTintFilter.highlightTintIntensity = 0.256944;
+            //            highlightsTintFilter.highlightTintColor = (GPUVector4) {1.00f, 0.39f, 0.15f, 1.0f};
+            //            highlightsTintFilter.highlightTintIntensity = 0.256944;
             
             [gpuImage addTarget:contrastFilter];
             [contrastFilter addTarget:highlightsTintFilter];
@@ -2811,14 +2814,14 @@
 }
 
 /*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
+ #pragma mark - Navigation
+ 
+ // In a storyboard-based application, you will often want to do a little preparation before navigation
+ - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+ // Get the new view controller using [segue destinationViewController].
+ // Pass the selected object to the new view controller.
+ }
+ */
 #pragma mark- CLImageEditor delegate
 
 - (void)imageEditor:(CLImageEditor *)editor didFinishEdittingWithImage:(UIImage *)image

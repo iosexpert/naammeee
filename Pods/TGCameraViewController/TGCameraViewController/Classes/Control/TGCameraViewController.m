@@ -60,6 +60,7 @@
 - (IBAction)albumTapped;
 - (IBAction)toggleTapped;
 - (IBAction)handleTapGesture:(UITapGestureRecognizer *)recognizer;
+- (IBAction)closeTappedalbum;
 
 - (void)deviceOrientationDidChangeNotification;
 - (AVCaptureVideoOrientation)videoOrientationForDeviceOrientation:(UIDeviceOrientation)deviceOrientation;
@@ -227,7 +228,15 @@
         [_delegate cameraDidCancel];
     }
 }
+- (IBAction)closeTappedalbum
+{
+    [[NSUserDefaults standardUserDefaults]setValue:@"yes" forKey:@"photo"];
+    NSLog(@"%@",[[NSUserDefaults standardUserDefaults] valueForKey:@"photo"]);
 
+    if ([_delegate respondsToSelector:@selector(cameraDidCancel)]) {
+        [_delegate cameraDidCancel];
+    }
+}
 - (IBAction)gridTapped
 {
     [_camera disPlayGridView];
@@ -270,14 +279,32 @@
 
 - (IBAction)albumTapped
 {
-    _shotButton.enabled =
-    _albumButton.enabled = NO;
+//    _shotButton.enabled =
+//    _albumButton.enabled = NO;
     
-    [self viewWillDisappearWithCompletion:^{
-        UIImagePickerController *pickerController = [TGAlbum imagePickerControllerWithDelegate:self];
-        pickerController.popoverPresentationController.sourceView = self.albumButton;
-        [self presentViewController:pickerController animated:YES completion:nil];
-    }];
+//    if ([_delegate respondsToSelector:@selector(cameraDidCancel)]) {
+//        [_delegate cameraDidCancel];
+//    }
+    
+//    [self viewWillDisappearWithCompletion:^{
+//
+//        if ([_delegate respondsToSelector:@selector(cameraDidCancel)]) {
+//            [_delegate cameraDidCancel];
+//        }
+//
+////        UIImagePickerController *picker = [[UIImagePickerController alloc] init];
+////           picker.delegate = self;
+////           picker.allowsEditing = NO;
+////       // picker.popoverPresentationController.sourceView = self.albumButton;
+////           picker.sourceType = UIImagePickerControllerSourceTypeSavedPhotosAlbum;
+////        [self presentViewController:picker animated:YES completion:nil];
+//
+//
+////        UIImagePickerController *pickerController = [TGAlbum imagePickerControllerWithDelegate:self];
+////        pickerController.popoverPresentationController.sourceView = self.albumButton;
+////        [self presentViewController:pickerController animated:YES completion:nil];
+//    }];
+    return;
 }
 
 - (IBAction)toggleTapped
